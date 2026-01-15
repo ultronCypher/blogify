@@ -7,7 +7,7 @@ const Modal = ({ isAuthenticated, onLogout }) => {
             <div className='modalCollection'>
                 {isAuthenticated ? (
                     <>
-                        <Link to="/profile" className="modalItem">Profile</Link>
+                        <Link to="/profile/me" className="modalItem">Profile</Link>
                         <button className="modalItem" onClick={onLogout}>
                             Logout
                         </button>

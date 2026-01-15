@@ -2,12 +2,14 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
-.titleName{
+}
+
+.titleName {
     font-family: "Ubuntu", sans-serif;
     font-weight: 500;
 }
-.container{
+
+.container {
     background-color: #FFFFFF;
     padding: 1rem;
     height: 4rem;
@@ -20,7 +22,8 @@
     position: relative;
 }
 
-.publishButton, .homeButton {
+.publishButton,
+.homeButton {
     border: none;
     outline: none;
     cursor: pointer;
@@ -36,7 +39,7 @@
     color: #F0F0F0;
 }
 
-.navbarButtonsSection{
+.navbarButtonsSection {
     display: flex;
     gap: 0.5rem;
 }
@@ -48,9 +51,21 @@
 }
 
 .usernameStyle {
-    font-family: "Roboto", sans-serif;
+    font-family: Helvetica, sans-serif;
     text-transform: capitalize;
     font-size: 1rem;
     color: black;
-    font-weight: 500;
+    font-weight: 550;
+}
+
+.avatarWrapperNavbar {
+    cursor: pointer;
+}
+
+.navbarAvatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #eee;
 }

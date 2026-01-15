@@ -56,15 +56,23 @@ const Navbar = () => {
       <div className="authModalContainer" ref={authRefModal}>
         {user ? (
           <div className="userMenu">
-            <div onClick={handleClickSilhoutte}>
-              <LoginIcon />
+            <div onClick={handleClickSilhoutte} className="avatarWrapperNavbar">
+              {user.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt="avatar"
+                  className="navbarAvatar"
+                />
+              ) : (
+                <LoginIcon />
+              )}
             </div>
-            {showAuthModal &&
+            {showAuthModal && (
               <Modal
                 isAuthenticated={true}
                 onLogout={logout}
               />
-            }
+            )}
             <span className='usernameStyle'>{user.username}</span>
           </div>
         ) : (
@@ -72,11 +80,12 @@ const Navbar = () => {
             <div onClick={handleClickSilhoutte}>
               <LoginIcon />
             </div>
-            {showAuthModal && 
-            <Modal
-              isAuthenticated={true}
-              onLogout={logout}
-            />}
+
+            {showAuthModal && (
+              <Modal
+                isAuthenticated={false}
+              />
+            )}
           </>
         )}
       </div>

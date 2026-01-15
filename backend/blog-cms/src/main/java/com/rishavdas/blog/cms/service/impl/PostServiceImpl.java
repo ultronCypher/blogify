@@ -18,6 +18,7 @@ import com.rishavdas.blog.cms.service.PostViewRedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -146,8 +147,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Page<PostSummaryDTO> getPostsByUser(Long userId, int page, int size) {
-        Pageable pageable=PageRequest.of(page,size);
-        Page<Post>posts=postRepository.findByUserId(userId,pageable);
+        Pageable pageable=PageRequest.of(page,size, Sort.by(Sort.Direction.DESC,"createdAt"));
+        Page<Post>posts=postRepository.findByAuthor_Id(userId,pageable);
         return posts.map(post -> {
             Long likes=postLikeRepository.countByPost(post);
             Long comments=commentRepository.getCommentCount(post.getId());

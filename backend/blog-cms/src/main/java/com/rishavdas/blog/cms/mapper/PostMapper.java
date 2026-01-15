@@ -47,7 +47,7 @@ public class PostMapper {
         dto.setTitle(post.getTitle());
         dto.setExcerpt(post.getContent().substring(0,Math.min(400,post.getContent().length())));
         dto.setAuthorUsername(post.getAuthor().getUsername());
-
+        dto.setAuthorAvatarUrl(post.getAuthor().getAvatarUrl());
         dto.setLikesCount(likes);
         dto.setViewsCount(views);
         dto.setCommentsCount(comments);

@@ -36,12 +36,6 @@ public class UserController {
         return ResponseEntity.ok(dtos);
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id){
-//        User user=userService.getUserById(id);
-//        return ResponseEntity.ok(UserMapper.toDTO(user));
-//    }
-
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO dto){
         User updated=userService.updateUser(id,dto);
@@ -72,16 +66,17 @@ public class UserController {
 //        return ResponseEntity.ok(dto);
 //    }
 
-    @PostMapping("users/me/avatar")
+    @PostMapping("/me/avatar")
     public ResponseEntity<?> uploadAvatar(
             @RequestParam("file")MultipartFile file,
             Authentication authentication
     ){
+
         String avatarUrl= userService.uploadAvatar(file, authentication.getName());
         return ResponseEntity.ok(Map.of("avatarUrl",avatarUrl));
     }
 
-    @GetMapping("/users/me")
+    @GetMapping("/me")
     public ResponseEntity<UserSummaryDTO> getMyProfile(
             Authentication authentication
     ) {
@@ -89,7 +84,7 @@ public class UserController {
                 userService.getPrivateProfile(authentication.getName())
         );
     }
-    @GetMapping("/users/{userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity<UserSummaryDTO> getPublicProfile(
             @PathVariable Long userId
     ) {

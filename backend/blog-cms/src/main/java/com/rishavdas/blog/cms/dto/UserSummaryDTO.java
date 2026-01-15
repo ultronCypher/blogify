@@ -8,6 +8,16 @@ public class UserSummaryDTO {
     private Long id;
     private String username;
     private String role;
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    private String avatarUrl;
     private List<PostSummaryDTO> posts;
 
     public List<PostSummaryDTO> getPosts() {
@@ -23,6 +33,7 @@ public class UserSummaryDTO {
         dto.id=user.getId();
         dto.username=user.getUsername();
         dto.role=user.getRole().name();
+        dto.avatarUrl= user.getAvatarUrl();
         return dto;
     }
     public Long getId(){

@@ -23,6 +23,6 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     @Query("SELECT p FROM Post p WHERE p.title LIKE %:text% OR p.content LIKE %:text%")
     List<Post> searchPostsByKeyword(@Param("text") String text);
 
-    Page<Post> findByUserId(Long userId, Pageable pageable);
+    Page<Post> findByAuthor_Id(Long userId, Pageable pageable);
 
 }

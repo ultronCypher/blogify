@@ -5,6 +5,7 @@ import api from '../../../api/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext'
 import ProfileBody from '../ProfileBody/ProfileBody';
+import LoginIcon from '../../common/LoginIcon/LoginIcon';
 
 const ProfileHeader = ({ user, isMe }) => {
     const fileInputRef = useRef(null);
@@ -56,11 +57,23 @@ const ProfileHeader = ({ user, isMe }) => {
             </div>
             <div className="profileHeader">
                 <div className="avatarWrapper">
-                    <img
+
+
+                    {avatarPreview ? (
+                        <img
+                            src={avatarPreview}
+                            alt="avatar"
+                            className="avatar"
+                        />
+                    ) : (
+                        <LoginIcon />
+                    )}
+
+                    {/* <img
                         src={avatarPreview || "/default-avatar.png"}
                         className="avatar"
                         alt="avatar"
-                    />
+                    /> */}
                     {isMe && (
                         <>
                             <button
@@ -86,7 +99,7 @@ const ProfileHeader = ({ user, isMe }) => {
                 </div>
             </div>
             <div style={{
-                marginTop:"2rem"
+                marginTop: "2rem"
             }}>
                 <ProfileBody />
             </div>

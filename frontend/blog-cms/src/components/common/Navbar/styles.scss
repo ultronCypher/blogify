@@ -7,12 +7,13 @@
 .titleName {
     font-family: "Ubuntu", sans-serif;
     font-weight: 500;
+    font-size: 2rem;
 }
 
 .container {
     background-color: #FFFFFF;
     padding: 1rem 2.5rem;
-    height: 4rem;
+    height: 5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -29,12 +30,13 @@
     cursor: pointer;
     background-color: #E93F00;
     color: white;
-    padding: 0.75rem;
+    padding: 1rem;
     border-radius: 4px;
     font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.25rem;
 }
 
-.publishButton:hover {
+.homeButton:hover, .publishButton:hover {
     background-color: #CC3800;
     color: #F0F0F0;
 }
@@ -53,7 +55,7 @@
 .usernameStyle {
     font-family: Helvetica, sans-serif;
     text-transform: capitalize;
-    font-size: 1rem;
+    font-size: 1.5rem;
     color: black;
     font-weight: 550;
 }
@@ -63,8 +65,8 @@
 }
 
 .navbarAvatar {
-    width: 36px;
-    height: 36px;
+    width: 3rem;
+    height: 3rem;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid #eee;

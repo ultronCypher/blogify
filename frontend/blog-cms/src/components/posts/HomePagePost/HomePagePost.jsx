@@ -3,6 +3,7 @@ import './styles.scss'
 import { getPreviewImage } from '../../../utils/cloudinary';
 import { FaHeart, FaRegHeart, FaEye, FaComment } from "react-icons/fa";
 import api from '../../../api/api';
+import { Link } from 'react-router-dom';
 
 const HomePagePost = ({ post }) => {
     const postId = post.id;
@@ -48,11 +49,13 @@ const HomePagePost = ({ post }) => {
     return (
         <div className='postPreview'>
             <div className="authorRow">
-                <img
-                    src={post?.authorAvatarUrl || "/default-avatar.png"}
-                    alt={post.authorUsername}
-                    className="authorAvatarPostStyle"
-                />
+                <Link to={`/users/${post?.authorId}`}> 
+                    <img
+                        src={post?.authorAvatarUrl || "/default-avatar.png"}
+                        alt={post.authorUsername}
+                        className="authorAvatarPostStyle"
+                    />
+                </Link>
                 <h5 className="authorName">{post.authorUsername}</h5>
             </div>
             <h2>{post.title}</h2>
@@ -66,7 +69,7 @@ const HomePagePost = ({ post }) => {
                     />
                 )}
             </div>
-            
+
             <p>{post.excerpt}....</p>
             <div className="postStats">
                 <span className="stat">

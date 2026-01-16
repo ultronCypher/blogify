@@ -9,6 +9,7 @@ import MyProfile from './pages/MyProfile/MyProfile';
 import AppLayout from './components/layouts/AppLayout';
 import './App.css'
 import PostDetail from './components/posts/PostDetail/PostDetail';
+import UserProfile from './pages/UserProfile/UserProfile';
 function App() {
   return (
     <BrowserRouter>
@@ -21,6 +22,7 @@ function App() {
           {/* <Route path="/request" element={<WritingPad />} /> */}
           <Route path="/:postId" element={<PostDetail />} />
           <Route path="/profile/me" element={<MyProfile />} />
+          <Route path="/users/:userId" element={<UserProfile />} />
         </Routes>
       </AppLayout>
     </BrowserRouter>

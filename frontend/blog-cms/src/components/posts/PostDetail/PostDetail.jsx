@@ -11,12 +11,12 @@ const PostDetail = () => {
     const [error, setError] = useState(null);
     const [newComment, setNewComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
-    const [commentsCount, setCommentsCount]=useState(0);
+    const [commentsCount, setCommentsCount] = useState(0);
     useEffect(() => {
         const fetchAllComments = async () => {
             try {
-                const res=await api.get(`/posts/${postId}/comments`);
-                const numberOfComments=await api.get(`/posts/${postId}/comments/count`);
+                const res = await api.get(`/posts/${postId}/comments`);
+                const numberOfComments = await api.get(`/posts/${postId}/comments/count`);
                 setComments(res.data);
                 setCommentsCount(numberOfComments.data)
             } catch (err) {
@@ -41,19 +41,19 @@ const PostDetail = () => {
         fetchPostDetails();
     }, [])
 
-    const handleSubmitComment=async()=>{
-        if(!newComment.trim())return;
-        try{
+    const handleSubmitComment = async () => {
+        if (!newComment.trim()) return;
+        try {
             setSubmitting(true);
-            const res=await api.post(`/posts/${postId}/comments`,{
+            const res = await api.post(`/posts/${postId}/comments`, {
                 content: newComment
             });
             setComments(prev => [res.data, ...prev]);
-            setCommentsCount(prev=>prev+1);
+            setCommentsCount(prev => prev + 1);
             setNewComment("");
-        }catch(err){
+        } catch (err) {
             setError("Failed to post comment");
-        }finally{
+        } finally {
             setSubmitting(false);
         }
     }
@@ -66,6 +66,16 @@ const PostDetail = () => {
 
                 <div className='postDetailsSection'>
                     <div className='titleSection'>
+
+                        {/* <div className="authorRow">
+                            <img
+                                src={post?.authorAvatarUrl || "/default-avatar.png"}
+                                alt={post.authorUsername}
+                                className="authorAvatarPostStyle"
+                            />
+                            <h5 className="authorName">{post.authorUsername}</h5>
+                        </div> */}
+
                         <h2>{postDetails?.title}</h2>
                         <h3>{postDetails?.author?.username}</h3>
                     </div>

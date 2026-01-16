@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { FaHeart, FaRegHeart, FaEye, FaComment } from "react-icons/fa";
 import './styles.scss'
 import TopLikedPost from '../../components/TopLikedPost/TopLikedPost'
+import TopContributors from '../../components/TopContributors/TopContributors'
 const Home = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -40,6 +41,7 @@ const Home = () => {
                     </div>
                     <div className='hallOfFameSection'>
                         <TopLikedPost />
+                        <TopContributors />
                     </div>
                 </div>
             </div>

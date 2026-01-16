@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import api from '../../../api/api';
 import './styles.scss'
+import { Link } from 'react-router-dom';
 import CommentContainer from '../../comments/CommentContainer/CommentContainer';
 const PostDetail = () => {
     const { postId } = useParams();
@@ -12,6 +13,16 @@ const PostDetail = () => {
     const [newComment, setNewComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [commentsCount, setCommentsCount] = useState(0);
+
+    const formatDate = (dateString) => {
+        if (!dateString) return ""
+        return new Intl.DateTimeFormat("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        }).format(new Date(dateString))
+    }
+
     useEffect(() => {
         const fetchAllComments = async () => {
             try {
@@ -65,20 +76,22 @@ const PostDetail = () => {
             <div className='postDetailPageLayout'>
 
                 <div className='postDetailsSection'>
-                    <div className='titleSection'>
-
-                        {/* <div className="authorRow">
+                    <div className="authorRow">
+                        <Link to={`/users/${postDetails.author.id}`} className="authorInfo">
                             <img
-                                src={post?.authorAvatarUrl || "/default-avatar.png"}
-                                alt={post.authorUsername}
+                                src={postDetails.authorAvatarUrl || "/default-avatar.png"}
+                                alt={postDetails.author.username}
                                 className="authorAvatarPostStyle"
                             />
-                            <h5 className="authorName">{post.authorUsername}</h5>
-                        </div> */}
-
-                        <h2>{postDetails?.title}</h2>
-                        <h3>{postDetails?.author?.username}</h3>
+                            <span className="authorName">{postDetails.author.username}</span>
+                        </Link>
+                        <span className="dot">•</span>
+                        <span className="postDate">
+                            {formatDate(postDetails.createdAt)}
+                        </span>
                     </div>
+                        <h2>{postDetails?.title}</h2>
+                    
                     <div className='imagesLayoutSection'>
                         {
 

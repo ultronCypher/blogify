@@ -11,6 +11,16 @@ const HomePagePost = ({ post }) => {
     const [error, setError] = useState(null);
     const [didUserLike, setDidUserLike] = useState(false);
     const [likesCount, setLikesCount] = useState(post.likesCount);
+
+    const formatDate = (dateString) => {
+        if (!dateString) return ""
+        return new Intl.DateTimeFormat("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        }).format(new Date(dateString))
+    }
+
     useEffect(() => {
         const fetchDidUserLike = async () => {
             try {
@@ -49,15 +59,20 @@ const HomePagePost = ({ post }) => {
     return (
         <div className='postPreview'>
             <div className="authorRow">
-                <Link to={`/users/${post?.authorId}`}> 
+                <Link to={`/users/${post.authorId}`} className="authorInfo">
                     <img
-                        src={post?.authorAvatarUrl || "/default-avatar.png"}
+                        src={post.authorAvatarUrl || "/default-avatar.png"}
                         alt={post.authorUsername}
                         className="authorAvatarPostStyle"
                     />
+                    <span className="authorName">{post.authorUsername}</span>
                 </Link>
-                <h5 className="authorName">{post.authorUsername}</h5>
+                <span className="dot">•</span>
+                <span className="postDate">
+                    {formatDate(post.createdAt)}
+                </span>
             </div>
+
             <h2>{post.title}</h2>
             <div className='imageContainer'>
                 {previewImage && (

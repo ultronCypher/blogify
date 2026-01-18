@@ -43,6 +43,9 @@
 .titleSection {
     display: flex;
     justify-content: space-between;
+    gap: 2rem;
+    color: black;
+    align-items: center;
 }
 
 .commentSection h3 {
@@ -100,4 +103,20 @@
 .commentInputBox button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+.editIconButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    color: #6b7280;
+    text-decoration: none;
+    transition: color 0.15s ease, color 0.15s ease;
+}
+
+.editIconButton:hover {
+    color: #000;
 }

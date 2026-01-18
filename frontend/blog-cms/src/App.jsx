@@ -10,6 +10,8 @@ import AppLayout from './components/layouts/AppLayout';
 import './App.css'
 import PostDetail from './components/posts/PostDetail/PostDetail';
 import UserProfile from './pages/UserProfile/UserProfile';
+import PostEditPage from './components/posts/PostEditPage/PostEditPage';
+
 function App() {
   return (
     <BrowserRouter>
@@ -23,6 +25,8 @@ function App() {
           <Route path="/:postId" element={<PostDetail />} />
           <Route path="/profile/me" element={<MyProfile />} />
           <Route path="/users/:userId" element={<UserProfile />} />
+          <Route path="/posts/:postId/edit" element={<PostEditPage />} />
+
         </Routes>
       </AppLayout>
     </BrowserRouter>

@@ -1,0 +1,85 @@
+.postEditPageContainer {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+  
+  .editCard {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 2.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  
+  /* Header */
+  .editHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .backLink {
+    font-size: 0.9rem;
+    color: #555;
+    text-decoration: none;
+  }
+  
+  .backLink:hover {
+    text-decoration: underline;
+  }
+  
+  .saveButton {
+    background-color: #111;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.4rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  
+  .saveButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  /* Editor */
+  .editForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+  
+  .editTitle {
+    font-size: 1.9rem;
+    font-weight: 600;
+    border: none;
+    outline: none;
+    resize: none;
+    line-height: 1.25;
+    padding: 0.5rem 0;
+    white-space: pre-wrap;
+  }
+  
+  
+  .editTitle::placeholder {
+    color: #bdbdbd;
+  }
+  
+  .editContent {
+    font-size: 1rem;
+    line-height: 1.7;
+    border: none;
+    outline: none;
+    resize: vertical;
+    min-height: 320px;
+    padding-top: 0.25rem;
+    white-space: pre-line;
+  }
+  
+  .errorText {
+    color: #b91c1c;
+    margin-bottom: 1rem;
+  }
+  

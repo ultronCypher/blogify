@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import api from '../../../api/api';
+import { useAuth } from '../../../context/AuthContext';
 import './styles.scss'
 import { Link } from 'react-router-dom';
 import CommentContainer from '../../comments/CommentContainer/CommentContainer';
+import { FiEdit2 } from "react-icons/fi"
+
 const PostDetail = () => {
     const { postId } = useParams();
+    const { user: currentUser } = useAuth();
     const [postDetails, setPostDetails] = useState();
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -24,33 +28,25 @@ const PostDetail = () => {
     }
 
     useEffect(() => {
-        const fetchAllComments = async () => {
+        const fetchData = async () => {
+            setLoading(true)
             try {
-                const res = await api.get(`/posts/${postId}/comments`);
-                const numberOfComments = await api.get(`/posts/${postId}/comments/count`);
-                setComments(res.data);
-                setCommentsCount(numberOfComments.data)
+                const [postRes, commentsRes, countRes] = await Promise.all([
+                    api.get(`/posts/${postId}`),
+                    api.get(`/posts/${postId}/comments`),
+                    api.get(`/posts/${postId}/comments/count`)
+                ])
+                setPostDetails(postRes.data)
+                setComments(commentsRes.data)
+                setCommentsCount(countRes.data)
             } catch (err) {
-                setError("Error fetching comments ", err);
+                setError("Failed to load post")
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
         }
-        fetchAllComments();
-    }, []);
-    useEffect(() => {
-        const fetchPostDetails = async () => {
-            try {
-                const res = await api.get(`/posts/${postId}`);
-                setPostDetails(res.data);
-            } catch (e) {
-                setError("Failed to load post details");
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchPostDetails();
-    }, [])
+        fetchData()
+    }, [postId]);
 
     const handleSubmitComment = async () => {
         if (!newComment.trim()) return;
@@ -71,6 +67,11 @@ const PostDetail = () => {
 
     if (loading || !postDetails) return <p>Loading post details...</p>
     if (error) return <p>{error}</p>
+    if (!postDetails) return null;
+    console.log("currentUser:", currentUser)
+    console.log("post author:", postDetails.author)
+
+    const canEdit = currentUser && (currentUser.id === postDetails.author.id)
     return (
         <div className='postDetailPageContainer'>
             <div className='postDetailPageLayout'>
@@ -90,8 +91,16 @@ const PostDetail = () => {
                             {formatDate(postDetails.createdAt)}
                         </span>
                     </div>
+                    <div className="titleSection">
                         <h2>{postDetails?.title}</h2>
-                    
+                        <Link
+                            to={`/posts/${postId}/edit`}
+                            className="editIconButton"
+                            title="Edit post"
+                        >
+                            <FiEdit2 size={24} />
+                        </Link>
+                    </div>
                     <div className='imagesLayoutSection'>
                         {
 

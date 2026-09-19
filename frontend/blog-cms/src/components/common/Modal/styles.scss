@@ -1,9 +1,7 @@
 .modalContainer {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    //padding: 1.75rem;
-    min-width: 220px;
+    min-width: 180px;
     background: linear-gradient(
         180deg,
         rgba(255, 255, 255, 0.95),
@@ -17,15 +15,24 @@
     right: 0;
     animation: fadeInScale 0.18s ease-out;
     backdrop-filter: blur(6px);
+    border-radius: 8px;
+    z-index: 1000;
+    overflow: hidden;
 }
 
 .modalItem {
-    padding: 0.5rem;
-    
+    padding: 0.75rem 1.25rem;
     text-decoration: none;
     color: #1f2937;
     font-size: 1rem;
     font-weight: 500;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    display: block;
+    font-family: inherit;
     transition:
         background 0.15s ease,
         color 0.15s ease,
@@ -33,10 +40,10 @@
 }
 
 .modalItem:hover {
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.08);
 }
 
-.modalCollection{
+.modalCollection {
     display: flex;
     flex-direction: column;
 }

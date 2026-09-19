@@ -50,6 +50,8 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    cursor: pointer;
+    user-select: none;
 }
 
 .usernameStyle {
@@ -61,7 +63,9 @@
 }
 
 .avatarWrapperNavbar {
-    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .navbarAvatar {

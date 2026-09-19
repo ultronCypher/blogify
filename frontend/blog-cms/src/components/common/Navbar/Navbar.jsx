@@ -9,21 +9,34 @@ const Navbar = () => {
   const { user, loading, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const authRefModal = useRef(null);
-  const handleClickSilhoutte = () => {
-    setShowAuthModal(!showAuthModal);
+
+  const handleClickSilhouette = () => {
+    setShowAuthModal((prev) => !prev);
   }
+
+  const handleClose = () => {
+    setShowAuthModal(false);
+  }
+
+  const handleLogout = () => {
+    logout();
+    setShowAuthModal(false);
+  }
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (authRefModal.current && !authRefModal.current.contains(e.target)) {
-        setShowAuthModal(false)
+        setShowAuthModal(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("mousedown", handleClickOutside);
     }
-  }, [])
+  }, []);
+
   if (loading) return null;
+
   return (
     <div className='container'>
       <div className="titleName">
@@ -41,52 +54,27 @@ const Navbar = () => {
           </Link>
         </div>
       </div>
-      <div>
-        {!user && (
-          <>
-            <Link to="/login">
-              <button className="loginBtn">Login</button>
-            </Link>
-            <Link to="/register">
-              <button className="registerBtn">Register</button>
-            </Link>
-          </>
-        )}
-      </div>
       <div className="authModalContainer" ref={authRefModal}>
-        {user ? (
-          <div className="userMenu">
-            <div onClick={handleClickSilhoutte} className="avatarWrapperNavbar">
-              {user.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt="avatar"
-                  className="navbarAvatar"
-                />
-              ) : (
-                <LoginIcon />
-              )}
-            </div>
-            {showAuthModal && (
-              <Modal
-                isAuthenticated={true}
-                onLogout={logout}
+        <div onClick={handleClickSilhouette} className="userMenu">
+          <div className="avatarWrapperNavbar">
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt="avatar"
+                className="navbarAvatar"
               />
-            )}
-            <span className='usernameStyle'>{user.username}</span>
-          </div>
-        ) : (
-          <>
-            <div onClick={handleClickSilhoutte}>
+            ) : (
               <LoginIcon />
-            </div>
-
-            {showAuthModal && (
-              <Modal
-                isAuthenticated={false}
-              />
             )}
-          </>
+          </div>
+          {user && <span className='usernameStyle'>{user.username}</span>}
+        </div>
+        {showAuthModal && (
+          <Modal
+            isAuthenticated={!!user}
+            onLogout={handleLogout}
+            onClose={handleClose}
+          />
         )}
       </div>
     </div>

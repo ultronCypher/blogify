@@ -1,46 +1,56 @@
 .modalContainer {
     display: flex;
     flex-direction: column;
-    min-width: 180px;
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.95),
-        rgba(245, 245, 245, 0.95)
-    );
+    min-width: 170px;
+    background: #ffffff;
     box-shadow:
-        0 10px 25px rgba(0, 0, 0, 0.12),
-        0 4px 10px rgba(0, 0, 0, 0.06);
+        0 10px 30px rgba(0, 0, 0, 0.1),
+        0 1px 4px rgba(0, 0, 0, 0.05);
     position: absolute;
-    top: calc(100% + 0.75rem);
+    top: calc(100% + 0.6rem);
     right: 0;
     animation: fadeInScale 0.18s ease-out;
-    backdrop-filter: blur(6px);
-    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
     z-index: 1000;
     overflow: hidden;
+    padding: 0.35rem 0;
 }
 
 .modalItem {
-    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1rem;
     text-decoration: none;
-    color: #1f2937;
-    font-size: 1rem;
+    color: #374151;
+    font-size: 0.9rem;
     font-weight: 500;
     background: transparent;
     border: none;
     cursor: pointer;
     text-align: left;
     width: 100%;
-    display: block;
     font-family: inherit;
     transition:
         background 0.15s ease,
-        color 0.15s ease,
-        transform 0.08s ease;
-}
+        color 0.15s ease;
 
-.modalItem:hover {
-    background: rgba(0, 0, 0, 0.08);
+    .modalItemIcon {
+        font-size: 1.05rem;
+        color: #6b7280;
+        transition: color 0.15s ease;
+    }
+
+    &:hover {
+        background: #f3f4f6;
+        color: #111827;
+
+        .modalItemIcon {
+            color: #111827;
+        }
+    }
 }
 
 .modalCollection {

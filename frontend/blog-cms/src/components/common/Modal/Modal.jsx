@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { FiUser, FiLogOut, FiLogIn, FiUserPlus } from 'react-icons/fi'
 import './styles.scss'
 
 const Modal = ({ isAuthenticated, onLogout, onClose }) => {
@@ -9,19 +10,23 @@ const Modal = ({ isAuthenticated, onLogout, onClose }) => {
                 {isAuthenticated ? (
                     <>
                         <Link to="/profile/me" className="modalItem" onClick={onClose}>
-                            Profile
+                            <FiUser className="modalItemIcon" />
+                            <span>Profile</span>
                         </Link>
                         <button className="modalItem" onClick={onLogout}>
-                            Logout
+                            <FiLogOut className="modalItemIcon" />
+                            <span>Logout</span>
                         </button>
                     </>
                 ) : (
                     <>
                         <Link to="/login" className="modalItem" onClick={onClose}>
-                            Login
+                            <FiLogIn className="modalItemIcon" />
+                            <span>Login</span>
                         </Link>
                         <Link to="/register" className="modalItem" onClick={onClose}>
-                            Register
+                            <FiUserPlus className="modalItemIcon" />
+                            <span>Register</span>
                         </Link>
                     </>
                 )}

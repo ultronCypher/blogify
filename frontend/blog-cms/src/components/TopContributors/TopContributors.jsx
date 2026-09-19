@@ -19,7 +19,7 @@ const TopContributors = () => {
             }
         }
         fetchTopContributors();
-    })
+    }, []);
     return (
         <div className='topContributorsSection'>
             <div className='topContributorsTitleSection'>

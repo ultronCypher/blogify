@@ -9,7 +9,11 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "post_likes",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id","post_id"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id","post_id"}),
+        indexes = {
+            @Index(name = "idx_post_likes_post_id", columnList = "post_id"),
+            @Index(name = "idx_post_likes_user_id", columnList = "user_id")
+        }
 )
 public class PostLike {
     @Id

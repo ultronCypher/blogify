@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,7 +73,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post getPostById(Long id) {
-        return postRepository.findById(id).orElse(null);
+        return postRepository.findByIdWithDetails(id).orElse(null);
     }
 
     @Override
@@ -82,9 +83,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post updatePost(Long id, PostDTO postDTO) {
-        Post existingPost=postRepository.findById(id).orElse(null);
-        if(existingPost == null){
-            return  null;
+        Post existingPost = postRepository.findById(id).orElse(null);
+        if (existingPost == null) {
+            return null;
         }
         existingPost.setTitle(postDTO.getTitle());
         existingPost.setContent(postDTO.getContent());
@@ -92,7 +93,10 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public void deletePost(Long id) {
+        commentRepository.deleteByPostId(id);
+        postLikeRepository.deleteByPostId(id);
         postRepository.deleteById(id);
     }
 
@@ -118,12 +122,22 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostSummaryDTO> getPostSummaries() {
-        List<Post>posts=postRepository.findAll();
+        List<Post> posts = postRepository.findAllWithDetails();
+        if (posts.isEmpty()) return List.of();
+
+        List<Long> postIds = posts.stream().map(Post::getId).toList();
+
+        Map<Long, Long> likesMap = postLikeRepository.countLikesByPostIds(postIds).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+
+        Map<Long, Long> commentsMap = commentRepository.countCommentsByPostIds(postIds).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+
         return posts.stream().map(post -> {
-            Long likes=postLikeRepository.countByPost(post);
-            Long comments = commentRepository.getCommentCount(post.getId());
+            Long likes = likesMap.getOrDefault(post.getId(), 0L);
+            Long comments = commentsMap.getOrDefault(post.getId(), 0L);
             Long views = postViewRedisService.getLiveViews(post.getId());
-            return postMapper.toSummary(post,likes,views,comments);
+            return postMapper.toSummary(post, likes, views, comments);
         }).toList();
     }
 
@@ -147,13 +161,23 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Page<PostSummaryDTO> getPostsByUser(Long userId, int page, int size) {
-        Pageable pageable=PageRequest.of(page,size, Sort.by(Sort.Direction.DESC,"createdAt"));
-        Page<Post>posts=postRepository.findByAuthor_Id(userId,pageable);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> posts = postRepository.findByAuthor_Id(userId, pageable);
+        if (posts.isEmpty()) return Page.empty();
+
+        List<Long> postIds = posts.stream().map(Post::getId).toList();
+
+        Map<Long, Long> likesMap = postLikeRepository.countLikesByPostIds(postIds).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+
+        Map<Long, Long> commentsMap = commentRepository.countCommentsByPostIds(postIds).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+
         return posts.map(post -> {
-            Long likes=postLikeRepository.countByPost(post);
-            Long comments=commentRepository.getCommentCount(post.getId());
-            Long views=postViewRedisService.getLiveViews(post.getId());
-            return postMapper.toSummary(post,likes,views,comments);
+            Long likes = likesMap.getOrDefault(post.getId(), 0L);
+            Long comments = commentsMap.getOrDefault(post.getId(), 0L);
+            Long views = postViewRedisService.getLiveViews(post.getId());
+            return postMapper.toSummary(post, likes, views, comments);
         });
     }
 }

@@ -16,7 +16,11 @@ import java.util.List;
 public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     boolean existsByUserAndPost(User user, Post post);
     void deleteByUserAndPost(User user,Post post);
+    void deleteByPostId(Long postId);
     Long countByPost(Post post);
+
+    @Query("SELECT pl.post.id, COUNT(pl) FROM PostLike pl WHERE pl.post.id IN :postIds GROUP BY pl.post.id")
+    List<Object[]> countLikesByPostIds(@Param("postIds") List<Long> postIds);
 
     @Query("""
     SELECT new com.rishavdas.blog.cms.dto.PostLikeDTO(

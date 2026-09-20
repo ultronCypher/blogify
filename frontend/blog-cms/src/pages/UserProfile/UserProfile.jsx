@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { selectCurrentUser, selectAuthLoading } from '../../features/auth/authSelectors'
 import api from '../../api/api'
 import AuthorProfileHeader from '../AuthorProfileHeader/AuthorProfileHeader'
 import ProfilePostsBody from '../../components/users/ProfilePostsBody/ProfilePostsBody'
 import './styles.scss'
-import { useAuth } from '../../context/AuthContext'
 
 const UserProfile = () => {
     const { userId } = useParams();
@@ -12,7 +13,8 @@ const UserProfile = () => {
     const [user, setUser] = useState(null);
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { user: authUser, loading: authLoading } = useAuth();
+    const authUser = useSelector(selectCurrentUser);
+    const authLoading = useSelector(selectAuthLoading);
     if(!authLoading && authUser && Number(userId)===authUser.id){
         return <Navigate to="/profile/me" replace/>
     }

@@ -1,30 +1,34 @@
-import React, { useState } from 'react'
-import api from '../../api/api';
+import React, { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { registerUser, clearAuthError, resetRegisterSuccess } from '../../features/auth/authSlice'
+import { selectAuthError, selectAuthLoading, selectRegisterSuccess } from '../../features/auth/authSelectors'
 import './styles.scss'
+
 const Register = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
-    const [error, setError] = useState(null)
-    const [success, setSuccess] = useState(false)
+
+    const dispatch = useDispatch();
+    const error = useSelector(selectAuthError);
+    const loading = useSelector(selectAuthLoading);
+    const success = useSelector(selectRegisterSuccess);
+
+    useEffect(() => {
+        dispatch(clearAuthError());
+        dispatch(resetRegisterSuccess());
+    }, [dispatch]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(null);
-        try {
-            await api.post("/auth/register", {
-                username,
-                email,
-                password
-            })
-            setSuccess(true);
+        const actionResult = await dispatch(registerUser({ username, email, password }));
+        if (registerUser.fulfilled.match(actionResult)) {
             setUsername("");
-            setEmail("")
+            setEmail("");
             setPassword("");
-        } catch (err) {
-            setError(err.response?.data?.message || "Registration failed")
         }
     }
+
     return (
         <div className='registerContainer'>
             <div className='registerTitle'>Create your account</div>
@@ -64,7 +68,9 @@ const Register = () => {
                     {error && <p className="error">{error}</p>}
                     {success && <p className="success">Account created successfully</p>}
                     <div className='inputSection'>
-                        <button type="submit" className='registerButton'>Register</button>
+                        <button type="submit" className='registerButton' disabled={loading}>
+                            {loading ? "Registering..." : "Register"}
+                        </button>
                     </div>
                 </form>
             </div>

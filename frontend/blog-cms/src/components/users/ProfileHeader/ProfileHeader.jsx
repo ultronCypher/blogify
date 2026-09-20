@@ -3,13 +3,14 @@ import './styles.scss'
 import { FiCamera } from "react-icons/fi";
 import api from '../../../api/api';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../../context/AuthContext'
+import { useDispatch } from 'react-redux';
+import { updateUser } from '../../../features/auth/authSlice';
 import ProfileBody from '../ProfileBody/ProfileBody';
 import LoginIcon from '../../common/LoginIcon/LoginIcon';
 
 const ProfileHeader = ({ user, isMe }) => {
     const fileInputRef = useRef(null);
-    const { updateUser } = useAuth();
+    const dispatch = useDispatch();
     const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl);
     const [loading, setLoading] = useState(false);
 
@@ -38,7 +39,7 @@ const ProfileHeader = ({ user, isMe }) => {
                 })
             const { avatarUrl } = res.data;
             setAvatarPreview(avatarUrl);
-            updateUser({ avatarUrl });
+            dispatch(updateUser({ avatarUrl }));
             toast.success("Profile updated successfully");
         } catch (err) {
             console.error("Avatar upload failed", err);

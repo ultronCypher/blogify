@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react'
 import api from '../../../api/api'
 import "./styles.scss"
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { useAuth } from '../../../context/AuthContext';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser, selectAuthLoading } from '../../../features/auth/authSelectors';
 
 const PostEditPage = () => {
     const { postId } = useParams();
     const navigate = useNavigate();
-    const { user: currentUser, loading: authLoading } = useAuth();
+    const currentUser = useSelector(selectCurrentUser);
+    const authLoading = useSelector(selectAuthLoading);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [loading, setLoading] = useState(true);

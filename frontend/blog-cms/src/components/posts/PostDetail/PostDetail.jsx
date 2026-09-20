@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from '../../../features/auth/authSelectors';
 import api from '../../../api/api';
-import { useAuth } from '../../../context/AuthContext';
 import './styles.scss'
 import CommentContainer from '../../comments/CommentContainer/CommentContainer';
 import { FiMoreVertical, FiEdit2, FiTrash2 } from "react-icons/fi"
@@ -9,7 +10,7 @@ import { FiMoreVertical, FiEdit2, FiTrash2 } from "react-icons/fi"
 const PostDetail = () => {
     const { postId } = useParams();
     const navigate = useNavigate();
-    const { user: currentUser } = useAuth();
+    const currentUser = useSelector(selectCurrentUser);
     const [postDetails, setPostDetails] = useState();
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);

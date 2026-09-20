@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { fetchCurrentUser } from './features/auth/authSlice';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from './components/common/Navbar/Navbar';
 import Home from './pages/Home/Home';
@@ -13,6 +15,12 @@ import UserProfile from './pages/UserProfile/UserProfile';
 import PostEditPage from './components/posts/PostEditPage/PostEditPage';
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchCurrentUser());
+  }, [dispatch]);
+
   return (
     <BrowserRouter>
       <AppLayout>
@@ -21,12 +29,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/request" element={<WritingPad />} />
-          {/* <Route path="/request" element={<WritingPad />} /> */}
           <Route path="/:postId" element={<PostDetail />} />
           <Route path="/profile/me" element={<MyProfile />} />
           <Route path="/users/:userId" element={<UserProfile />} />
           <Route path="/posts/:postId/edit" element={<PostEditPage />} />
-
         </Routes>
       </AppLayout>
     </BrowserRouter>
@@ -34,3 +40,4 @@ function App() {
 }
 
 export default App
+

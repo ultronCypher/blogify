@@ -2,12 +2,16 @@ import React, { useState, useRef, useEffect } from 'react'
 import './styles.scss'
 import LoginIcon from '../LoginIcon/LoginIcon'
 import Modal from '../Modal/Modal'
-import { useAuth } from '../../../context/AuthContext'
+import { useSelector, useDispatch } from 'react-redux'
+import { selectCurrentUser, selectAuthLoading } from '../../../features/auth/authSelectors'
+import { logout } from '../../../features/auth/authSlice'
 import { Link } from 'react-router-dom'
 import { FiHome, FiEdit3, FiChevronDown } from 'react-icons/fi'
 
 const Navbar = () => {
-  const { user, loading, logout } = useAuth();
+  const dispatch = useDispatch();
+  const user = useSelector(selectCurrentUser);
+  const loading = useSelector(selectAuthLoading);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const authRefModal = useRef(null);
 
@@ -20,7 +24,7 @@ const Navbar = () => {
   }
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     setShowAuthModal(false);
   }
 

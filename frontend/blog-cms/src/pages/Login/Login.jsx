@@ -1,32 +1,30 @@
-import React, { useState } from 'react'
-import api from '../../api/api'
-import { useAuth } from '../../context/AuthContext'
+import React, { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { loginUser, clearAuthError } from '../../features/auth/authSlice'
+import { selectAuthError, selectAuthLoading } from '../../features/auth/authSelectors'
 import { useNavigate } from 'react-router-dom'
 import "./styles.scss"
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const { login } = useAuth();
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const error = useSelector(selectAuthError);
+  const loading = useSelector(selectAuthLoading);
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, [dispatch]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-    try {
-      const res = await api.post("auth/login", {
-        username, password
-      })
-      const token = res.data.token
-      localStorage.setItem("token", token)
-      const meResponse = await api.get("/auth/me")
-      login(token, meResponse.data);
+    const resultAction = await dispatch(loginUser({ username, password }));
+    if (loginUser.fulfilled.match(resultAction)) {
       navigate("/");
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login failed')
     }
   }
+
   return (
     <div className='loginContainer'>
       <div className='loginTitle'>Login with your credentials</div>
@@ -54,7 +52,9 @@ const Login = () => {
           </div>
           {error && <p className="error">{error}</p>}
           <div className='inputSection'>
-            <button className='loginButton' type="submit">Login</button>
+            <button className='loginButton' type="submit" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
+            </button>
           </div>
         </form>
       </div>

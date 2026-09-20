@@ -93,4 +93,12 @@ public class Post {
     public void setImages(List<PostImage> images) {
         this.images = images;
     }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }

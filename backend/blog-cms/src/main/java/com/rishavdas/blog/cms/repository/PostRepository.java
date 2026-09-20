@@ -32,4 +32,7 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     @EntityGraph(attributePaths = {"author", "images"})
     Page<Post> findByAuthor_Id(Long userId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"author", "images"})
+    Page<Post> findAll(Pageable pageable);
 }

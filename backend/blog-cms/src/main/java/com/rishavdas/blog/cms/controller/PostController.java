@@ -10,6 +10,10 @@ import com.rishavdas.blog.cms.service.PostService;
 import com.rishavdas.blog.cms.service.PostViewRedisService;
 import com.rishavdas.blog.cms.service.PostViewService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,8 +51,24 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PostSummaryDTO>> getPostSummaries(){
-        return ResponseEntity.ok(postService.getPostSummaries());
+    public ResponseEntity<Page<PostSummaryDTO>> getPostSummaries(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort
+    ){
+        if (page < 0) page = 0;
+        if (size < 1) size = 10;
+        if (size > 50) size = 50;
+
+        String[] sortParams = sort.split(",");
+        Sort.Direction direction = Sort.Direction.DESC;
+        String property = sortParams[0];
+        if (sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc")) {
+            direction = Sort.Direction.ASC;
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, property));
+        return ResponseEntity.ok(postService.getPostSummaries(pageable));
     }
 
     @GetMapping("/{id}")

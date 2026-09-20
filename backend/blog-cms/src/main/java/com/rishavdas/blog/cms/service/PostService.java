@@ -8,6 +8,8 @@ import com.rishavdas.blog.cms.model.TimeRange;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface PostService {
@@ -21,6 +23,7 @@ public interface PostService {
     List<Post> getLatestPosts();
     List<Post> findPostsByUsers(Long userId);
     List<PostSummaryDTO> getPostSummaries();
+    Page<PostSummaryDTO> getPostSummaries(Pageable pageable);
     List<PostLikeDTO> getTopLikedPosts(TimeRange range, int limit);
     Page<PostSummaryDTO> getPostsByUser(Long userId, int page, int size);
 }

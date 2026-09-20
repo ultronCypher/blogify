@@ -141,6 +141,29 @@ public class PostServiceImpl implements PostService {
         }).toList();
     }
 
+    @Override
+    public Page<PostSummaryDTO> getPostSummaries(Pageable pageable) {
+        Page<Post> posts = postRepository.findAll(pageable);
+        if (posts.isEmpty()) {
+            return posts.map(post -> null);
+        }
+
+        List<Long> postIds = posts.stream().map(Post::getId).toList();
+
+        Map<Long, Long> likesMap = postLikeRepository.countLikesByPostIds(postIds).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+
+        Map<Long, Long> commentsMap = commentRepository.countCommentsByPostIds(postIds).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+
+        return posts.map(post -> {
+            Long likes = likesMap.getOrDefault(post.getId(), 0L);
+            Long comments = commentsMap.getOrDefault(post.getId(), 0L);
+            Long views = postViewRedisService.getLiveViews(post.getId());
+            return postMapper.toSummary(post, likes, views, comments);
+        });
+    }
+
     private LocalDateTime getStartDate(TimeRange range){
         LocalDateTime now=LocalDateTime.now();
         return switch (range){
@@ -163,7 +186,9 @@ public class PostServiceImpl implements PostService {
     public Page<PostSummaryDTO> getPostsByUser(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> posts = postRepository.findByAuthor_Id(userId, pageable);
-        if (posts.isEmpty()) return Page.empty();
+        if (posts.isEmpty()) {
+            return posts.map(post -> null);
+        }
 
         List<Long> postIds = posts.stream().map(Post::getId).toList();
 

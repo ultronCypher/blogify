@@ -9,6 +9,26 @@ public class PostSummaryDTO {
     private Long viewsCount;
     private Long commentsCount;
     private String previewImage;
+
+    private String authorAvatarUrl;
+    private Long authorId;
+
+    public String getAuthorAvatarUrl() {
+        return authorAvatarUrl;
+    }
+
+    public void setAuthorAvatarUrl(String authorAvatarUrl) {
+        this.authorAvatarUrl = authorAvatarUrl;
+    }
+
+    public Long getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Long authorId) {
+        this.authorId = authorId;
+    }
+
     public Long getId() {
         return id;
     }

@@ -149,5 +149,4 @@ public class UserServiceImpl implements UserService {
 
         return UserSummaryDTO.from(user);
     }
-
 }

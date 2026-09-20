@@ -51,7 +51,9 @@ public class SecurityConfig {
                         //.requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                                 .requestMatchers("/api/auth/me").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/posts/**").permitAll()
+
                                 .requestMatchers(HttpMethod.POST,"/api/posts/*/like").authenticated()
                                 .requestMatchers(HttpMethod.DELETE,"/api/posts/*/like").authenticated()
                         .anyRequest().authenticated()

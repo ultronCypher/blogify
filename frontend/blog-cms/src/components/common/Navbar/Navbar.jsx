@@ -4,60 +4,66 @@ import LoginIcon from '../LoginIcon/LoginIcon'
 import Modal from '../Modal/Modal'
 import { useAuth } from '../../../context/AuthContext'
 import { Link } from 'react-router-dom'
+import { FiHome, FiEdit3, FiChevronDown } from 'react-icons/fi'
 
 const Navbar = () => {
   const { user, loading, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const authRefModal = useRef(null);
-  const handleClickSilhoutte = () => {
-    setShowAuthModal(!showAuthModal);
+
+  const handleClickSilhouette = () => {
+    setShowAuthModal((prev) => !prev);
   }
+
+  const handleClose = () => {
+    setShowAuthModal(false);
+  }
+
+  const handleLogout = () => {
+    logout();
+    setShowAuthModal(false);
+  }
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (authRefModal.current && !authRefModal.current.contains(e.target)) {
-        setShowAuthModal(false)
+        setShowAuthModal(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("mousedown", handleClickOutside);
     }
-  }, [])
+  }, []);
+
   if (loading) return null;
+
   return (
-    <div className='container'>
-      <div className="titleName">
-        <h2>Blogify</h2>
-      </div>
-      <div className='navbarButtonsSection'>
-        <div>
-          <Link to="/">
-            <button className='homeButton'>Home</button>
+    <header className="navbarHeader">
+      <div className="navbarContainer">
+        <Link to="/" className="brandLink">
+          <h2 className="titleName">
+            Blogify<span className="brandDot">.</span>
+          </h2>
+        </Link>
+        <div className="navbarButtonsSection">
+          <Link to="/" className="navLink">
+            <button className="homeButton">
+              <FiHome className="btnIcon" />
+              <span>Home</span>
+            </button>
+          </Link>
+          <Link to="/request" className="navLink">
+            <button className="publishButton">
+              <FiEdit3 className="btnIcon" />
+              <span>Start Publishing</span>
+            </button>
           </Link>
         </div>
-        <div>
-          <Link to="/request">
-            <button className='publishButton'>Start Publishing</button>
-          </Link>
-        </div>
-      </div>
-      <div>
-        {!user && (
-          <>
-            <Link to="/login">
-              <button className="loginBtn">Login</button>
-            </Link>
-            <Link to="/register">
-              <button className="registerBtn">Register</button>
-            </Link>
-          </>
-        )}
-      </div>
-      <div className="authModalContainer" ref={authRefModal}>
-        {user ? (
-          <div className="userMenu">
-            <div onClick={handleClickSilhoutte} className="avatarWrapperNavbar">
-              {user.avatarUrl ? (
+        <div className="authModalContainer" ref={authRefModal}>
+          <div onClick={handleClickSilhouette} className="userMenu">
+            <div className="avatarWrapperNavbar">
+              {user?.avatarUrl ? (
                 <img
                   src={user.avatarUrl}
                   alt="avatar"
@@ -67,29 +73,19 @@ const Navbar = () => {
                 <LoginIcon />
               )}
             </div>
-            {showAuthModal && (
-              <Modal
-                isAuthenticated={true}
-                onLogout={logout}
-              />
-            )}
-            <span className='usernameStyle'>{user.username}</span>
+            {user && <span className="usernameStyle">{user.username}</span>}
+            <FiChevronDown className={`dropdownChevron ${showAuthModal ? 'open' : ''}`} />
           </div>
-        ) : (
-          <>
-            <div onClick={handleClickSilhoutte}>
-              <LoginIcon />
-            </div>
-
-            {showAuthModal && (
-              <Modal
-                isAuthenticated={false}
-              />
-            )}
-          </>
-        )}
+          {showAuthModal && (
+            <Modal
+              isAuthenticated={!!user}
+              onLogout={handleLogout}
+              onClose={handleClose}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </header>
   )
 }
 

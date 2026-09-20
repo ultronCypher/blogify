@@ -9,6 +9,11 @@
     gap: 0.75rem;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 
+    // Prevent the card from ever growing wider than its grid/flex slot
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+
     &:hover {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
     }
@@ -20,6 +25,7 @@
         margin: 0;
         line-height: 1.35;
         letter-spacing: -0.015em;
+        overflow-wrap: break-word;
     }
 
     p {
@@ -27,6 +33,7 @@
         color: #4b5563;
         line-height: 1.55;
         margin: 0;
+        overflow-wrap: break-word;
     }
 }
 

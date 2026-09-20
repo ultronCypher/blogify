@@ -12,6 +12,12 @@ const HomePagePost = ({ post }) => {
     const [didUserLike, setDidUserLike] = useState(false);
     const [likesCount, setLikesCount] = useState(post.likesCount);
 
+    const stripHtml = (html) => {
+        if (!html) return '';
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        return doc.body.textContent || '';
+    };
+
     const formatDate = (dateString) => {
         if (!dateString) return ""
         return new Intl.DateTimeFormat("en-US", {
@@ -85,7 +91,7 @@ const HomePagePost = ({ post }) => {
                 )}
             </div>
 
-            <p>{post.excerpt}....</p>
+            <p>{stripHtml(post.excerpt)}....</p>
             <div className="postStats">
                 <span className="stat">
                     <FaEye />

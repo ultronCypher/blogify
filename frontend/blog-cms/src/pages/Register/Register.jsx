@@ -4,12 +4,16 @@ import { registerUser, clearAuthError, resetRegisterSuccess } from '../../featur
 import { selectAuthError, selectAuthLoading, selectRegisterSuccess } from '../../features/auth/authSelectors'
 import './styles.scss'
 
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+
 const Register = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
 
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const error = useSelector(selectAuthError);
     const loading = useSelector(selectAuthLoading);
     const success = useSelector(selectRegisterSuccess);
@@ -23,9 +27,13 @@ const Register = () => {
         e.preventDefault();
         const actionResult = await dispatch(registerUser({ username, email, password }));
         if (registerUser.fulfilled.match(actionResult)) {
+            toast.success("Account created successfully! Please login.");
             setUsername("");
             setEmail("");
             setPassword("");
+            navigate("/login");
+        } else if (registerUser.rejected.match(actionResult)) {
+            toast.error(actionResult.payload || "Registration failed");
         }
     }
 

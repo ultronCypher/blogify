@@ -1,17 +1,12 @@
-import React, { useEffect, useState } from 'react'
-import api from '../../api/api'
-import ProfileHeader from '../../components/users/ProfileHeader/ProfileHeader';
+import React from 'react';
+import ProfileView from '../../components/users/ProfileView/ProfileView';
+
 const MyProfile = () => {
-    const [user,setUser]=useState(null);
-    useEffect(()=>{
-        api.get("/users/me")
-        .then(res=>setUser(res.data));
-    },[]);
     return (
         <div>
-            <ProfileHeader user={user} isMe />
+            <ProfileView isMe={true} />
         </div>
-    )
-}
+    );
+};
 
-export default MyProfile
+export default MyProfile;

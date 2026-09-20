@@ -1,9 +1,26 @@
-import React, { useState, useEffect } from 'react'
-import api from '../../../api/api'
-import "./styles.scss"
+import React, { useState, useEffect } from 'react';
+import api from '../../../api/api';
+import "./styles.scss";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { selectCurrentUser, selectAuthLoading } from '../../../features/auth/authSelectors';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+import { toast } from 'react-toastify';
+
+const quillModules = {
+    toolbar: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'align': [] }],
+        ['link'],
+        ['clean']
+    ]
+};
+
+const quillFormats = [
+    'header', 'bold', 'italic', 'underline', 'strike', 'align', 'link'
+];
 
 const PostEditPage = () => {
     const { postId } = useParams();
@@ -16,11 +33,6 @@ const PostEditPage = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
     const [unauthorized, setUnauthorized] = useState(false);
-
-    const autoGrow = (e) => {
-        e.target.style.height = "auto";
-        e.target.style.height = e.target.scrollHeight + "px";
-    };
 
     useEffect(() => {
         if (authLoading) return;
@@ -50,8 +62,11 @@ const PostEditPage = () => {
     }, [postId, currentUser, authLoading]);
 
     const handleSave = async () => {
-        if (!title.trim() || !content.trim()) {
-            setError("Title and content cannot be empty");
+        const plainText = content.replace(/<[^>]*>/g, '').trim();
+        if (!title.trim() || !plainText) {
+            const msg = "Title and content cannot be empty";
+            setError(msg);
+            toast.error(msg);
             return;
         }
 
@@ -61,9 +76,12 @@ const PostEditPage = () => {
                 title,
                 content,
             });
+            toast.success("Post updated successfully!");
             navigate(`/${postId}`);
         } catch (err) {
-            setError("Failed to save changes. You may not have permission.");
+            const errorMsg = "Failed to save changes. You may not have permission.";
+            setError(errorMsg);
+            toast.error(errorMsg);
         } finally {
             setSaving(false);
         }
@@ -106,34 +124,26 @@ const PostEditPage = () => {
                     </button>
                 </div>
                 <div className="editForm">
-                    <textarea
-                        className="editTitle"
+                    <input
+                        className="editTitleInput"
                         value={title}
-                        onChange={
-                            (e) => {
-                                setTitle(e.target.value);
-                                autoGrow(e);
-                            }
-                        }
+                        onChange={(e) => setTitle(e.target.value)}
                         placeholder="Post title"
-                        rows={2}
                     />
-                    <textarea
-                        className="editContent"
-                        value={content}
-                        onChange={
-                            (e) => {
-                                setContent(e.target.value);
-                                autoGrow(e);
-                            }
-                        }
-                        placeholder="Write your post..."
-                        rows={14}
-                    />
+                    <div className="quillEditorWrapper">
+                        <ReactQuill
+                            theme="snow"
+                            value={content}
+                            onChange={setContent}
+                            modules={quillModules}
+                            formats={quillFormats}
+                            placeholder="Write your post..."
+                        />
+                    </div>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default PostEditPage
+export default PostEditPage;

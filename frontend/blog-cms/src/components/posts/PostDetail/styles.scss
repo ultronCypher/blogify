@@ -1,5 +1,5 @@
 .postDetailPageContainer {
-    max-width: 960px;
+    //max-width: 960px;
     margin: 0 auto;
     padding: 2rem 1.5rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -160,8 +160,66 @@
     font-size: 1.05rem;
     line-height: 1.7;
     color: #374151;
-    white-space: pre-line;
     margin: 0.5rem 0;
+
+    // Prevent any child from pushing the container wider
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+
+    // Wrap long unbroken strings and URLs only as a last resort.
+    // overflow-wrap: break-word respects word boundaries; word-break is
+    // intentionally left at its default (normal) so words are never split
+    // at arbitrary character positions.
+    overflow-wrap: break-word;
+    word-wrap: break-word; // legacy alias for overflow-wrap
+
+    // Ensure every element react-quill can emit wraps and stays in-flow.
+    // No word-break override — let the browser use its default (normal)
+    // so it only breaks at real word boundaries.
+    p, h1, h2, h3, h4, h5, h6,
+    ul, ol, li,
+    blockquote, pre, code,
+    strong, em, u, s, span, a {
+        overflow-wrap: break-word;
+        white-space: normal;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    // Links — let overflow-wrap handle bare URLs; word-break stays normal
+    // so linked words like "forth" or "Rio" are never split mid-character.
+    a {
+        color: #E93F00;
+        text-decoration: underline;
+        overflow-wrap: break-word;
+    }
+
+    // Code blocks / preformatted text should scroll horizontally on their own
+    // rather than pushing the page
+    pre, code {
+        white-space: pre-wrap;
+        overflow-x: auto;
+    }
+
+    // Images inserted via the editor must not exceed the container
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    // Lists need left-padding so bullets/numbers are visible
+    ul, ol {
+        padding-left: 1.5rem;
+    }
+
+    blockquote {
+        border-left: 3px solid #e5e7eb;
+        padding-left: 1rem;
+        color: #6b7280;
+        margin: 0.5rem 0;
+    }
 }
 
 .commentSection {

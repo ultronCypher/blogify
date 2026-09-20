@@ -1,42 +1,81 @@
-import React, { useState } from 'react'
-import './styles.scss'
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+import { toast } from 'react-toastify';
 import api from '../../api/api';
+import './styles.scss';
+
+const quillModules = {
+    toolbar: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'align': [] }],
+        ['link'],
+        ['clean']
+    ]
+};
+
+const quillFormats = [
+    'header', 'bold', 'italic', 'underline', 'strike', 'align', 'link'
+];
+
 const WritingPad = () => {
+    const navigate = useNavigate();
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [images, setImages] = useState([]);
+    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false)
+
     const handleImageChange = (e) => {
-        const selected=Array.from(e.target.files);
+        const selected = Array.from(e.target.files);
         setImages((prev) => [...prev, ...selected]);
     };
+
     const removeImage = (indexToRemove) => {
-        setImages((prev) => prev.filter((_, index) => index !== indexToRemove))
-    }
+        setImages((prev) => prev.filter((_, index) => index !== indexToRemove));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
+
+        // Strip empty tags if needed
+        const plainText = content.replace(/<[^>]*>/g, '').trim();
+        if (!title.trim() || !plainText) {
+            const msg = "Title and content cannot be empty";
+            setError(msg);
+            toast.error(msg);
+            return;
+        }
+
         try {
+            setSubmitting(true);
             const formData = new FormData();
             formData.append("title", title);
             formData.append("content", content);
             images.forEach((img) => {
                 formData.append("images", img);
             });
+
             await api.post("/posts", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 }
-            })
-            setSuccess(true);
-            setTitle("");
-            setContent("");
-            setImages([]);
+            });
+
+            toast.success("Post created successfully.");
+            navigate("/");
         } catch (err) {
-            setError(err.response?.data?.message || "Failed to publish article")
+            const errorMsg = err.response?.data?.message || "Failed to publish article";
+            setError(errorMsg);
+            toast.error(errorMsg);
+        } finally {
+            setSubmitting(false);
         }
-    }
+    };
+
     return (
         <div className='createPostContainer'>
             <div className='createPostTitle'>Write your Blog entry</div>
@@ -55,14 +94,16 @@ const WritingPad = () => {
 
                     <div className='inputSection'>
                         <h2 className='formLabel'>Body</h2>
-                        <textarea
-                            type="text"
-                            placeholder="Write the content of the blog..."
-                            value={content}
-                            onChange={e => setContent(e.target.value)}
-                            rows={10}
-                            required
-                        />
+                        <div className="quillEditorWrapper">
+                            <ReactQuill
+                                theme="snow"
+                                value={content}
+                                onChange={setContent}
+                                modules={quillModules}
+                                formats={quillFormats}
+                                placeholder="Write the content of the blog..."
+                            />
+                        </div>
                     </div>
 
                     <div className="inputSection">
@@ -74,12 +115,12 @@ const WritingPad = () => {
                             onChange={handleImageChange}
                         />
                     </div>
+
                     {images.length > 0 && (
                         <div className="imagePreviewGrid">
                             {images.map((img, index) => (
                                 <div key={index} className="imagePreviewWrapper">
                                     <img
-                                        key={index}
                                         src={URL.createObjectURL(img)}
                                         alt="preview"
                                         className="imagePreview"
@@ -87,7 +128,7 @@ const WritingPad = () => {
                                     <button
                                         type="button"
                                         className="removeImageButton"
-                                        onClick={()=>removeImage(index)}
+                                        onClick={() => removeImage(index)}
                                     >
                                         x
                                     </button>
@@ -97,14 +138,16 @@ const WritingPad = () => {
                     )}
 
                     {error && <p className="error">{error}</p>}
-                    {success && <p className="success">Account created successfully</p>}
+
                     <div className='inputSection'>
-                        <button type="submit" className='createPostButton'>Create</button>
+                        <button type="submit" disabled={submitting} className='createPostButton'>
+                            {submitting ? "Publishing..." : "Create"}
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default WritingPad
+export default WritingPad;

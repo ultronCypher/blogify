@@ -5,6 +5,8 @@ import { selectAuthError, selectAuthLoading } from '../../features/auth/authSele
 import { useNavigate } from 'react-router-dom'
 import "./styles.scss"
 
+import { toast } from 'react-toastify';
+
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +23,10 @@ const Login = () => {
     e.preventDefault();
     const resultAction = await dispatch(loginUser({ username, password }));
     if (loginUser.fulfilled.match(resultAction)) {
+      toast.success("Logged in successfully!");
       navigate("/");
+    } else if (loginUser.rejected.match(resultAction)) {
+      toast.error(resultAction.payload || "Login failed");
     }
   }
 

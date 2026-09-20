@@ -7,6 +7,9 @@ import './styles.scss'
 import CommentContainer from '../../comments/CommentContainer/CommentContainer';
 import { FiMoreVertical, FiEdit2, FiTrash2 } from "react-icons/fi"
 
+import DOMPurify from 'dompurify';
+import { toast } from 'react-toastify';
+
 const PostDetail = () => {
     const { postId } = useParams();
     const navigate = useNavigate();
@@ -73,8 +76,10 @@ const PostDetail = () => {
             setComments(prev => [res.data, ...prev]);
             setCommentsCount(prev => prev + 1);
             setNewComment("");
+            toast.success("Comment added successfully!");
         } catch (err) {
             setError("Failed to post comment");
+            toast.error("Failed to post comment");
         } finally {
             setSubmitting(false);
         }
@@ -84,9 +89,10 @@ const PostDetail = () => {
         if (!window.confirm("Are you sure you want to delete this post?")) return;
         try {
             await api.delete(`/posts/${postId}`);
+            toast.success("Post deleted successfully!");
             navigate("/");
         } catch (err) {
-            alert("Failed to delete post.");
+            toast.error("Failed to delete post.");
         }
     };
 
@@ -163,7 +169,10 @@ const PostDetail = () => {
                         </div>
                     )}
 
-                    <p className="postContent">{postDetails?.content}</p>
+                    <div
+                        className="postContent"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(postDetails?.content || '') }}
+                    />
 
                     <div className="commentSection">
                         <h3>Comment Section ({commentsCount})</h3>

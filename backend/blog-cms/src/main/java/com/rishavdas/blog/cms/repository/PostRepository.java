@@ -11,6 +11,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+import com.rishavdas.blog.cms.dto.TopContributorDTO;
+
 public interface PostRepository extends JpaRepository<Post,Long> {
     Post findPostByTitle(String title);
     Post findPostByTitleContaining(String title);
@@ -35,4 +37,13 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     @EntityGraph(attributePaths = {"author", "images"})
     Page<Post> findAll(Pageable pageable);
+
+    Long countByAuthor_Id(Long userId);
+
+    @Query("SELECT p.id FROM Post p WHERE p.author.id = :userId")
+    List<Long> findPostIdsByAuthorId(@Param("userId") Long userId);
+
+    @Query("SELECT new com.rishavdas.blog.cms.dto.TopContributorDTO(u.id, u.username, u.avatarUrl, COUNT(p)) " +
+           "FROM Post p JOIN p.author u GROUP BY u.id, u.username, u.avatarUrl ORDER BY COUNT(p) DESC")
+    List<TopContributorDTO> findTopContributors(Pageable pageable);
 }

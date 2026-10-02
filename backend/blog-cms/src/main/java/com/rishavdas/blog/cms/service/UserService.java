@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+import com.rishavdas.blog.cms.dto.UserProfileStatsDTO;
+
 public interface UserService {
     User createUser(User user);
     User getUserById(Long id);
@@ -21,4 +23,6 @@ public interface UserService {
     String updateAvatar(MultipartFile file, String username);
     UserSummaryDTO getPrivateProfile(String username);
     UserSummaryDTO getPublicProfile(Long userId);
+    UserProfileStatsDTO getUserProfileStats(Long userId);
+    UserProfileStatsDTO getPrivateProfileStats(String username);
 }

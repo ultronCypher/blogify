@@ -23,6 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 
+import com.rishavdas.blog.cms.dto.UserProfileStatsDTO;
+import com.rishavdas.blog.cms.repository.PostViewRepository;
+
 @Service
 public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
@@ -30,16 +33,18 @@ public class UserServiceImpl implements UserService {
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
+    private final PostViewRepository postViewRepository;
     private final PostViewRedisService postViewRedisService;
     private final PostMapper postMapper;
     private final CloudinaryService cloudinaryService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, PostRepository postRepository, PostLikeRepository postLikeRepository, CommentRepository commentRepository, PostViewRedisService postViewRedisService, PostMapper postMapper, CloudinaryService cloudinaryService){
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, PostRepository postRepository, PostLikeRepository postLikeRepository, CommentRepository commentRepository, PostViewRepository postViewRepository, PostViewRedisService postViewRedisService, PostMapper postMapper, CloudinaryService cloudinaryService){
         this.userRepository=userRepository;
         this.passwordEncoder = passwordEncoder;
         this.postRepository = postRepository;
         this.postLikeRepository = postLikeRepository;
         this.commentRepository = commentRepository;
+        this.postViewRepository = postViewRepository;
         this.postViewRedisService = postViewRedisService;
         this.postMapper = postMapper;
         this.cloudinaryService = cloudinaryService;
@@ -148,5 +153,49 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("user not found"));
 
         return UserSummaryDTO.from(user);
+    }
+
+    @Override
+    public UserProfileStatsDTO getUserProfileStats(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("user not found"));
+        Long totalPosts = postRepository.countByAuthor_Id(userId);
+        Long totalLikes = postLikeRepository.countTotalLikesByAuthorId(userId);
+
+        // Sum Redis live view counts across all posts by this user.
+        // Redis is the authoritative view counter; the DB post_views table only stores
+        // one row per (post, viewer) due to the unique constraint, so it under-counts.
+        List<Long> postIds = postRepository.findPostIdsByAuthorId(userId);
+        long totalViews = 0L;
+        if (postIds != null && !postIds.isEmpty()) {
+            for (Long postId : postIds) {
+                Long redisCount = postViewRedisService.getLiveViews(postId);
+                // Fall back to DB count for this post if Redis has nothing (e.g. cold cache)
+                if (redisCount == null || redisCount == 0L) {
+                    Long dbCount = postViewRepository.countByPostId(postId);
+                    totalViews += (dbCount != null ? dbCount : 0L);
+                } else {
+                    totalViews += redisCount;
+                }
+            }
+        }
+
+        return new UserProfileStatsDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole() != null ? user.getRole().name() : null,
+                user.getAvatarUrl(),
+                totalPosts != null ? totalPosts : 0L,
+                totalLikes != null ? totalLikes : 0L,
+                totalViews
+        );
+    }
+
+    @Override
+    public UserProfileStatsDTO getPrivateProfileStats(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("user not found"));
+        return getUserProfileStats(user.getId());
     }
 }

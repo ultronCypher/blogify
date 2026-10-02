@@ -7,7 +7,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name="posts", indexes = {
@@ -37,6 +39,14 @@ public class Post {
             orphanRemoval = true
     )
     private List<PostImage> images = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name="post_tags",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags=new HashSet<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -100,5 +110,13 @@ public class Post {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Set<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
     }
 }

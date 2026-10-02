@@ -76,6 +76,9 @@ public class UserController {
         return ResponseEntity.ok(Map.of("avatarUrl",avatarUrl));
     }
 
+    @Autowired
+    private com.rishavdas.blog.cms.service.CommentService commentService;
+
     @GetMapping("/me")
     public ResponseEntity<UserSummaryDTO> getMyProfile(
             Authentication authentication
@@ -84,12 +87,42 @@ public class UserController {
                 userService.getPrivateProfile(authentication.getName())
         );
     }
+
+    @GetMapping("/me/stats")
+    public ResponseEntity<com.rishavdas.blog.cms.dto.UserProfileStatsDTO> getMyProfileStats(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                userService.getPrivateProfileStats(authentication.getName())
+        );
+    }
+
     @GetMapping("/{userId}")
     public ResponseEntity<UserSummaryDTO> getPublicProfile(
             @PathVariable Long userId
     ) {
         return ResponseEntity.ok(
                 userService.getPublicProfile(userId)
+        );
+    }
+
+    @GetMapping("/{userId}/stats")
+    public ResponseEntity<com.rishavdas.blog.cms.dto.UserProfileStatsDTO> getPublicProfileStats(
+            @PathVariable Long userId
+    ) {
+        return ResponseEntity.ok(
+                userService.getUserProfileStats(userId)
+        );
+    }
+
+    @GetMapping("/{userId}/comments")
+    public ResponseEntity<org.springframework.data.domain.Page<com.rishavdas.blog.cms.dto.UserCommentDTO>> getUserComments(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(
+                commentService.getUserComments(userId, page, size)
         );
     }
 }

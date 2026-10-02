@@ -38,4 +38,7 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
             @Param("startDate") LocalDateTime startDate,
             Pageable pageable
     );
+
+    @Query("SELECT COUNT(pl) FROM PostLike pl WHERE pl.post.author.id = :userId")
+    Long countTotalLikesByAuthorId(@Param("userId") Long userId);
 }

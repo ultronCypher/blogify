@@ -1,21 +1,15 @@
 package com.rishavdas.blog.cms.service.impl;
 
-import com.rishavdas.blog.cms.dto.PostDTO;
+import com.rishavdas.blog.cms.dto.post_dtos.PostDTO;
 import com.rishavdas.blog.cms.dto.PostLikeDTO;
 import com.rishavdas.blog.cms.dto.PostSummaryDTO;
+import com.rishavdas.blog.cms.dto.post_dtos.PostRequestDTO;
 import com.rishavdas.blog.cms.mapper.PostMapper;
-import com.rishavdas.blog.cms.model.Post;
-import com.rishavdas.blog.cms.model.PostImage;
-import com.rishavdas.blog.cms.model.TimeRange;
-import com.rishavdas.blog.cms.model.User;
-import com.rishavdas.blog.cms.repository.CommentRepository;
-import com.rishavdas.blog.cms.repository.PostLikeRepository;
-import com.rishavdas.blog.cms.repository.PostRepository;
-import com.rishavdas.blog.cms.repository.UserRepository;
+import com.rishavdas.blog.cms.model.*;
+import com.rishavdas.blog.cms.repository.*;
 import com.rishavdas.blog.cms.service.PostImageService;
 import com.rishavdas.blog.cms.service.PostService;
 import com.rishavdas.blog.cms.service.PostViewRedisService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,10 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,33 +33,42 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final PostLikeRepository postLikeRepository;
+    private final TagRepository tagRepository;
     private final PostViewRedisService postViewRedisService;
     private final PostMapper postMapper;
     private final PostImageService postImageService;
 
-    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository, CommentRepository commentRepository, PostLikeRepository postLikeRepository, PostViewRedisService postViewRedisService, PostMapper postMapper, PostImageService postImageService){
+    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository, CommentRepository commentRepository, PostLikeRepository postLikeRepository, TagRepository tagRepository, PostViewRedisService postViewRedisService, PostMapper postMapper, PostImageService postImageService){
         this.postRepository=postRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.postLikeRepository = postLikeRepository;
+        this.tagRepository = tagRepository;
         this.postViewRedisService = postViewRedisService;
         this.postMapper = postMapper;
         this.postImageService = postImageService;
     }
 
     @Override
-    public Post createPost(PostDTO postDTO, List<MultipartFile>images) {
+    public Post createPost(PostRequestDTO postRequestDTO, List<MultipartFile>images) {
         String username= SecurityContextHolder.getContext().getAuthentication().getName();
         User author=userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("user not found"));
+        Set<Long> tagIds = postRequestDTO.getTagIds();
+        if(tagIds!=null && !tagIds.isEmpty() && tagIds.size()>5){
+            throw new IllegalArgumentException("A post can have a maximum of 5 tags.");
+        }
         Post post=new Post();
-        post.setTitle(postDTO.getTitle());
-        post.setContent(postDTO.getContent());
+        post.setTitle(postRequestDTO.getTitle());
+        post.setContent(postRequestDTO.getContent());
         post.setAuthor(author);
+        if(tagIds!=null && !tagIds.isEmpty()){
+            List<Tag> tags = tagRepository.findAllById(tagIds);
+            post.setTags(new HashSet<>(tags));
+        }
         postRepository.save(post);
-        List<PostImage>uploadedImages=postImageService.uploadImages(images,post);
         if (images != null && !images.isEmpty()) {
-            uploadedImages = postImageService.uploadImages(images, post);
+            List<PostImage>uploadedImages = postImageService.uploadImages(images, post);
             post.getImages().addAll(uploadedImages);
         }
         return postRepository.save(post);
@@ -89,6 +92,13 @@ public class PostServiceImpl implements PostService {
         }
         existingPost.setTitle(postDTO.getTitle());
         existingPost.setContent(postDTO.getContent());
+        if (postDTO.getTagIds() != null) {
+            if (postDTO.getTagIds().size() > 5) {
+                throw new IllegalArgumentException("A post can have a maximum of 5 tags.");
+            }
+            List<Tag> tags = tagRepository.findAllById(postDTO.getTagIds());
+            existingPost.setTags(new HashSet<>(tags));
+        }
         return postRepository.save(existingPost);
     }
 
@@ -204,5 +214,11 @@ public class PostServiceImpl implements PostService {
             Long views = postViewRedisService.getLiveViews(post.getId());
             return postMapper.toSummary(post, likes, views, comments);
         });
+    }
+
+    @Override
+    public List<com.rishavdas.blog.cms.dto.TopContributorDTO> getTopContributors(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return postRepository.findTopContributors(pageable);
     }
 }

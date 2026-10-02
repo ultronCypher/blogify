@@ -11,4 +11,7 @@ public interface PostViewRepository extends JpaRepository<PostView, Long> {
     @Query("SELECT COUNT(pv) FROM PostView pv WHERE pv.post.id = :postId")
     Long countByPostId(@Param("postId") Long postId);
     boolean existsByPostAndUser(Post post, User user);
+
+    @Query("SELECT COUNT(pv) FROM PostView pv WHERE pv.post.author.id = :userId")
+    Long countTotalViewsByAuthorId(@Param("userId") Long userId);
 }

@@ -63,7 +63,8 @@ public class SecurityConfig {
 
                                 .requestMatchers(HttpMethod.POST,"/api/posts/*/like").authenticated()
                                 .requestMatchers(HttpMethod.DELETE,"/api/posts/*/like").authenticated()
-                        .anyRequest().authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/tags/**").permitAll()
+                                .anyRequest().authenticated()
                         //.anyRequest().permitAll()
                 )
                 .sessionManagement(session -> session

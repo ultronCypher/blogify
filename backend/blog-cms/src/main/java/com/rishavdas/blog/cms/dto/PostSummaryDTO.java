@@ -1,5 +1,7 @@
 package com.rishavdas.blog.cms.dto;
 
+import java.util.List;
+
 public class PostSummaryDTO {
     private Long id;
     private String title;
@@ -12,6 +14,15 @@ public class PostSummaryDTO {
 
     private String authorAvatarUrl;
     private Long authorId;
+    private List<TagDTO> tags;
+
+    public List<TagDTO> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<TagDTO> tags) {
+        this.tags = tags;
+    }
 
     public String getAuthorAvatarUrl() {
         return authorAvatarUrl;

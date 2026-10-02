@@ -77,5 +77,9 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.findCommentsByPostId(postId);
     }
 
-
+    @Override
+    public org.springframework.data.domain.Page<com.rishavdas.blog.cms.dto.UserCommentDTO> getUserComments(Long userId, int page, int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return commentRepository.findCommentsByAuthorId(userId, pageable);
+    }
 }

@@ -1,6 +1,10 @@
-package com.rishavdas.blog.cms.dto;
+package com.rishavdas.blog.cms.dto.post_dtos;
+
+import com.rishavdas.blog.cms.dto.TagDTO;
+import com.rishavdas.blog.cms.dto.UserDTO;
 
 import java.util.List;
+import java.util.Set;
 
 public class PostDTO {
     private Long id;
@@ -8,6 +12,9 @@ public class PostDTO {
     private String content;
     private UserDTO author;
     private List<String> images;
+    private List<TagDTO> tags;
+    private Set<Long> tagIds;
+
     public Long getId(){
         return id;
     }
@@ -37,5 +44,17 @@ public class PostDTO {
     }
     public void setImages(List<String> images) {
         this.images = images;
+    }
+    public List<TagDTO> getTags() {
+        return tags;
+    }
+    public void setTags(List<TagDTO> tags) {
+        this.tags = tags;
+    }
+    public Set<Long> getTagIds() {
+        return tagIds;
+    }
+    public void setTagIds(Set<Long> tagIds) {
+        this.tagIds = tagIds;
     }
 }

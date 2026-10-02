@@ -1,15 +1,16 @@
 package com.rishavdas.blog.cms.controller;
 
-import com.rishavdas.blog.cms.dto.PostDTO;
+import com.rishavdas.blog.cms.dto.post_dtos.PostDTO;
 import com.rishavdas.blog.cms.dto.PostLikeDTO;
 import com.rishavdas.blog.cms.dto.PostSummaryDTO;
+import com.rishavdas.blog.cms.dto.post_dtos.PostRequestDTO;
+import com.rishavdas.blog.cms.dto.post_dtos.PostResponseDTO;
 import com.rishavdas.blog.cms.mapper.PostMapper;
 import com.rishavdas.blog.cms.model.Post;
 import com.rishavdas.blog.cms.model.TimeRange;
 import com.rishavdas.blog.cms.service.PostService;
 import com.rishavdas.blog.cms.service.PostViewRedisService;
 import com.rishavdas.blog.cms.service.PostViewService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -41,12 +43,14 @@ public class PostController {
     public ResponseEntity<PostDTO> createPost(
             @RequestPart("title") String title,
             @RequestPart("content") String content,
+            @RequestPart(value = "tagIds", required = false) Set<Long> tagIds,
             @RequestPart(value = "images", required = false) List<MultipartFile> images
     ){
-        PostDTO postDTO=new PostDTO();
-        postDTO.setTitle(title);
-        postDTO.setContent(content);
-        Post savedPost=postService.createPost(postDTO,images);
+        PostRequestDTO postRequestDTO = new PostRequestDTO();
+        postRequestDTO.setTitle(title);
+        postRequestDTO.setContent(content);
+        postRequestDTO.setTagIds(tagIds);
+        Post savedPost=postService.createPost(postRequestDTO,images);
         return ResponseEntity.ok(PostMapper.toDTO(savedPost));
     }
 
@@ -127,5 +131,12 @@ public class PostController {
         return ResponseEntity.ok(
                 postService.getTopLikedPosts(range,limit)
         );
+    }
+
+    @GetMapping("/contributors/top")
+    public ResponseEntity<List<com.rishavdas.blog.cms.dto.TopContributorDTO>> getTopContributors(
+            @RequestParam(defaultValue = "10") int limit
+    ){
+        return ResponseEntity.ok(postService.getTopContributors(limit));
     }
 }

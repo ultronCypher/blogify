@@ -1,8 +1,9 @@
 package com.rishavdas.blog.cms.service;
 
-import com.rishavdas.blog.cms.dto.PostDTO;
+import com.rishavdas.blog.cms.dto.post_dtos.PostDTO;
 import com.rishavdas.blog.cms.dto.PostLikeDTO;
 import com.rishavdas.blog.cms.dto.PostSummaryDTO;
+import com.rishavdas.blog.cms.dto.post_dtos.PostRequestDTO;
 import com.rishavdas.blog.cms.model.Post;
 import com.rishavdas.blog.cms.model.TimeRange;
 import org.springframework.data.domain.Page;
@@ -12,8 +13,10 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
+import com.rishavdas.blog.cms.dto.TopContributorDTO;
+
 public interface PostService {
-    Post createPost(PostDTO postDTO, List<MultipartFile>images);
+    Post createPost(PostRequestDTO postRequestDTO, List<MultipartFile>images);
     Post getPostById(Long id);
     List<Post> getAllPosts();
     Post updatePost(Long id, PostDTO postDTO);
@@ -26,4 +29,5 @@ public interface PostService {
     Page<PostSummaryDTO> getPostSummaries(Pageable pageable);
     List<PostLikeDTO> getTopLikedPosts(TimeRange range, int limit);
     Page<PostSummaryDTO> getPostsByUser(Long userId, int page, int size);
+    List<TopContributorDTO> getTopContributors(int limit);
 }

@@ -3,7 +3,7 @@ import { FiTag } from 'react-icons/fi';
 import api from '../../api/api';
 import './styles.scss';
 
-const PopularTags = ({ activeTagSlug, onSelectTag }) => {
+const PopularTags = ({ activeTagSlug, selectedTagSlugs = [], onSelectTag }) => {
     const [tags, setTags] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -25,6 +25,10 @@ const PopularTags = ({ activeTagSlug, onSelectTag }) => {
     if (loading) return <div className="popularTagsSection"><p className="sidebarStatusText">Loading tags...</p></div>;
     if (error || tags.length === 0) return null;
 
+    const activeSlugs = Array.isArray(selectedTagSlugs) && selectedTagSlugs.length > 0
+        ? selectedTagSlugs
+        : (activeTagSlug ? [activeTagSlug] : []);
+
     return (
         <div className="popularTagsSection">
             <div className="popularTagsTitleSection">
@@ -36,13 +40,13 @@ const PopularTags = ({ activeTagSlug, onSelectTag }) => {
 
             <div className="popularTagsList">
                 {tags.map((tag) => {
-                    const isActive = activeTagSlug === tag.slug;
+                    const isActive = activeSlugs.includes(tag.slug);
                     const count = tag.postCount ?? tag.count ?? 0;
                     return (
                         <button
                             key={tag.id}
                             className={`popularTagItem ${isActive ? 'active' : ''}`}
-                            onClick={() => onSelectTag && onSelectTag(isActive ? null : tag.slug)}
+                            onClick={() => onSelectTag && onSelectTag(tag.slug)}
                         >
                             <span className="tagName">#{tag.name}</span>
                             <span className="tagCount">{count} {count === 1 ? 'post' : 'posts'}</span>

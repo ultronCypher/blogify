@@ -20,7 +20,13 @@ import './styles.scss';
 const Home = () => {
     const dispatch = useDispatch();
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTagSlug = searchParams.get('tag');
+
+    const tagsParam = searchParams.get('tags') || searchParams.get('tag');
+    const tagMode = searchParams.get('tagMode') || 'ALL';
+
+    const selectedTagSlugs = tagsParam
+        ? tagsParam.split(',').map(s => s.trim()).filter(Boolean)
+        : [];
 
     const posts = useSelector(selectPosts);
     const currentPage = useSelector(selectCurrentPage);
@@ -44,20 +50,41 @@ const Home = () => {
     }, []);
 
     useEffect(() => {
-        dispatch(fetchPosts({ page: 0, size: 10, tagSlug: activeTagSlug }));
-    }, [dispatch, activeTagSlug]);
+        dispatch(fetchPosts({ page: 0, size: pageSize, tags: selectedTagSlugs, tagMode }));
+    }, [dispatch, tagsParam, tagMode]);
 
-    const handleSelectTag = (slug) => {
-        if (slug) {
-            setSearchParams({ tag: slug });
-        } else {
+    const handleToggleTag = (slug) => {
+        if (!slug) {
             setSearchParams({});
+            return;
         }
+        let updated;
+        if (selectedTagSlugs.includes(slug)) {
+            updated = selectedTagSlugs.filter(s => s !== slug);
+        } else {
+            updated = [...selectedTagSlugs, slug];
+        }
+
+        if (updated.length === 0) {
+            setSearchParams({});
+        } else {
+            setSearchParams({ tags: updated.join(','), tagMode });
+        }
+    };
+
+    const handleModeChange = (newMode) => {
+        if (selectedTagSlugs.length > 0) {
+            setSearchParams({ tags: selectedTagSlugs.join(','), tagMode: newMode });
+        }
+    };
+
+    const handleClearFilters = () => {
+        setSearchParams({});
     };
 
     const handlePageChange = (pageIndex) => {
         if (pageIndex >= 0 && pageIndex < totalPages && pageIndex !== currentPage) {
-            dispatch(fetchPosts({ page: pageIndex, size: pageSize, tagSlug: activeTagSlug }));
+            dispatch(fetchPosts({ page: pageIndex, size: pageSize, tags: selectedTagSlugs, tagMode }));
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -115,26 +142,59 @@ const Home = () => {
         <div className='homePageContainer'>
             <div className='homePageLayout'>
                 <div className='homePageFeedPosts'>
-                    <div className="tagFilterBar">
-                        <button
-                            className={`tagFilterPill ${!activeTagSlug ? 'active' : ''}`}
-                            onClick={() => handleSelectTag(null)}
-                        >
-                            All Posts
-                        </button>
-                        {filterTags.map((tag) => (
+                    <div className="multiTagFilterContainer">
+                        <div className="tagFilterBar">
                             <button
-                                key={tag.id}
-                                className={`tagFilterPill ${activeTagSlug === tag.slug ? 'active' : ''}`}
-                                onClick={() => handleSelectTag(tag.slug)}
+                                className={`tagFilterPill ${selectedTagSlugs.length === 0 ? 'active' : ''}`}
+                                onClick={handleClearFilters}
                             >
-                                #{tag.name}
+                                All Posts
                             </button>
-                        ))}
-                        {activeTagSlug && (
-                            <button className="clearFilterBtn" onClick={() => handleSelectTag(null)}>
-                                Clear filter ✕
-                            </button>
+                            {filterTags.map((tag) => {
+                                const isSelected = selectedTagSlugs.includes(tag.slug);
+                                return (
+                                    <button
+                                        key={tag.id}
+                                        className={`tagFilterPill ${isSelected ? 'active' : ''}`}
+                                        onClick={() => handleToggleTag(tag.slug)}
+                                    >
+                                        #{tag.name} {isSelected && '✓'}
+                                    </button>
+                                );
+                            })}
+                            {selectedTagSlugs.length > 0 && (
+                                <button className="clearFilterBtn" onClick={handleClearFilters}>
+                                    Clear filters ✕
+                                </button>
+                            )}
+                        </div>
+
+                        {selectedTagSlugs.length > 0 && (
+                            <div className="tagModeBar">
+                                <span className="modeTitle">Match mode:</span>
+                                <div className="modeOptions">
+                                    <label className={`modeRadioLabel ${tagMode === 'ALL' ? 'selected' : ''}`}>
+                                        <input
+                                            type="radio"
+                                            name="tagMode"
+                                            value="ALL"
+                                            checked={tagMode === 'ALL'}
+                                            onChange={() => handleModeChange('ALL')}
+                                        />
+                                        All selected tags (AND)
+                                    </label>
+                                    <label className={`modeRadioLabel ${tagMode === 'ANY' ? 'selected' : ''}`}>
+                                        <input
+                                            type="radio"
+                                            name="tagMode"
+                                            value="ANY"
+                                            checked={tagMode === 'ANY'}
+                                            onChange={() => handleModeChange('ANY')}
+                                        />
+                                        Any selected tag (OR)
+                                    </label>
+                                </div>
+                            </div>
                         )}
                     </div>
 
@@ -147,7 +207,7 @@ const Home = () => {
                     {status === 'failed' && (
                         <div className="postsErrorState">
                             <p>Error: {error}</p>
-                            <button onClick={() => dispatch(fetchPosts({ page: currentPage, size: pageSize, tagSlug: activeTagSlug }))} className="retryBtn">
+                            <button onClick={() => dispatch(fetchPosts({ page: currentPage, size: pageSize, tags: selectedTagSlugs, tagMode }))} className="retryBtn">
                                 Retry
                             </button>
                         </div>
@@ -155,13 +215,13 @@ const Home = () => {
 
                     {status !== 'loading' && status !== 'failed' && posts.length === 0 && (
                         <div className="postsEmptyState">
-                            <p>{activeTagSlug ? `No posts found tagged with "#${activeTagSlug}".` : 'No posts available.'}</p>
+                            <p>{selectedTagSlugs.length > 0 ? `No posts found matching the selected tag filters.` : 'No posts available.'}</p>
                         </div>
                     )}
 
                     {status !== 'failed' && posts.map(post => (
                         <Link key={post.id} to={`/${post.id}`}>
-                            <HomePagePost post={post} onSelectTag={handleSelectTag} />
+                            <HomePagePost post={post} onSelectTag={handleToggleTag} />
                         </Link>
                     ))}
 
@@ -190,7 +250,10 @@ const Home = () => {
                     )}
                 </div>
                 <div className='hallOfFameSection'>
-                    <PopularTags activeTagSlug={activeTagSlug} onSelectTag={handleSelectTag} />
+                    <PopularTags
+                        selectedTagSlugs={selectedTagSlugs}
+                        onSelectTag={handleToggleTag}
+                    />
                     <TopLikedPost />
                     <TopContributors />
                 </div>

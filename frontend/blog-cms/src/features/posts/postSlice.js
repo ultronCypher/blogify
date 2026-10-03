@@ -13,10 +13,15 @@ const initialState = {
 
 export const fetchPosts = createAsyncThunk(
     "posts/fetchPosts",
-    async ({ page = 0, size = 10, tagSlug = null } = {}) => {
-        const url = tagSlug
-            ? `/posts/tag/${tagSlug}?page=${page}&size=${size}`
-            : `/posts?page=${page}&size=${size}`;
+    async ({ page = 0, size = 10, tags = [], tagMode = "ALL", tagSlug = null } = {}) => {
+        let url = `/posts?page=${page}&size=${size}`;
+        const tagList = Array.isArray(tags)
+            ? tags
+            : (tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : (tagSlug ? [tagSlug] : []));
+
+        if (tagList.length > 0) {
+            url += `&tags=${encodeURIComponent(tagList.join(','))}&tagMode=${tagMode}`;
+        }
         const response = await api.get(url);
         return response.data;
     }

@@ -1,5 +1,6 @@
 package com.rishavdas.blog.cms.service.impl;
 
+import com.rishavdas.blog.cms.dto.TopContributorDTO;
 import com.rishavdas.blog.cms.dto.post_dtos.PostDTO;
 import com.rishavdas.blog.cms.dto.PostLikeDTO;
 import com.rishavdas.blog.cms.dto.PostSummaryDTO;
@@ -10,20 +11,20 @@ import com.rishavdas.blog.cms.repository.*;
 import com.rishavdas.blog.cms.service.PostImageService;
 import com.rishavdas.blog.cms.service.PostService;
 import com.rishavdas.blog.cms.service.PostViewRedisService;
+import com.rishavdas.blog.cms.service.TopContributorsRedisService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.data.domain.Pageable;
-
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,22 +35,28 @@ public class PostServiceImpl implements PostService {
     private final CommentRepository commentRepository;
     private final PostLikeRepository postLikeRepository;
     private final TagRepository tagRepository;
+    private final PostViewRepository postViewRepository;
     private final PostViewRedisService postViewRedisService;
+    private final TopContributorsRedisService topContributorsRedisService;
     private final PostMapper postMapper;
     private final PostImageService postImageService;
 
-    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository, CommentRepository commentRepository, PostLikeRepository postLikeRepository, TagRepository tagRepository, PostViewRedisService postViewRedisService, PostMapper postMapper, PostImageService postImageService){
+    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository, CommentRepository commentRepository, PostLikeRepository postLikeRepository, TagRepository tagRepository, PostViewRepository postViewRepository, PostViewRedisService postViewRedisService, TopContributorsRedisService topContributorsRedisService, PostMapper postMapper, PostImageService postImageService){
         this.postRepository=postRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.postLikeRepository = postLikeRepository;
         this.tagRepository = tagRepository;
+        this.postViewRepository = postViewRepository;
         this.postViewRedisService = postViewRedisService;
+        this.topContributorsRedisService = topContributorsRedisService;
         this.postMapper = postMapper;
         this.postImageService = postImageService;
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = {"popularTags", "topContributors"}, allEntries = true)
     public Post createPost(PostRequestDTO postRequestDTO, List<MultipartFile>images) {
         String username= SecurityContextHolder.getContext().getAuthentication().getName();
         User author=userRepository.findByUsername(username)
@@ -71,7 +78,9 @@ public class PostServiceImpl implements PostService {
             List<PostImage>uploadedImages = postImageService.uploadImages(images, post);
             post.getImages().addAll(uploadedImages);
         }
-        return postRepository.save(post);
+        Post savedPost = postRepository.save(post);
+        topContributorsRedisService.evictTopContributors();
+        return savedPost;
     }
 
     @Override
@@ -85,6 +94,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = {"popularTags", "topContributors"}, allEntries = true)
     public Post updatePost(Long id, PostDTO postDTO) {
         Post existingPost = postRepository.findById(id).orElse(null);
         if (existingPost == null) {
@@ -103,10 +114,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
+    @CacheEvict(value = {"popularTags", "topContributors"}, allEntries = true)
     public void deletePost(Long id) {
         commentRepository.deleteByPostId(id);
         postLikeRepository.deleteByPostId(id);
+        postViewRepository.deleteByPostId(id);
         postRepository.deleteById(id);
     }
 
@@ -217,8 +230,58 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<com.rishavdas.blog.cms.dto.TopContributorDTO> getTopContributors(int limit) {
+    @Cacheable(value = "topContributors", key = "#limit")
+    public List<TopContributorDTO> getTopContributors(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         return postRepository.findTopContributors(pageable);
+    }
+
+    @Override
+    public Page<PostSummaryDTO> getPostsByTagSlug(String slug, Pageable pageable) {
+        return getPostsByTags(List.of(slug), TagFilterMode.ALL, pageable);
+    }
+
+    @Override
+    public Page<PostSummaryDTO> getPostsByTags(List<String> tags, TagFilterMode mode, Pageable pageable) {
+        List<String> cleanTags = tags == null ? List.of() : tags.stream()
+                .filter(t -> t != null && !t.trim().isEmpty())
+                .flatMap(t -> Arrays.stream(t.split(",")))
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .filter(t -> !t.isEmpty())
+                .distinct()
+                .toList();
+
+        if (cleanTags.isEmpty()) {
+            return getPostSummaries(pageable);
+        }
+
+        TagFilterMode effectiveMode = (mode != null) ? mode : TagFilterMode.ALL;
+        Page<Post> posts;
+
+        if (effectiveMode == TagFilterMode.ANY || cleanTags.size() == 1) {
+            posts = postRepository.findByAnyTagSlugs(cleanTags, pageable);
+        } else {
+            posts = postRepository.findByAllTagSlugs(cleanTags, (long) cleanTags.size(), pageable);
+        }
+
+        if (posts.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<Long> postIds = posts.stream().map(Post::getId).toList();
+
+        Map<Long, Long> likesMap = postLikeRepository.countLikesByPostIds(postIds).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+
+        Map<Long, Long> commentsMap = commentRepository.countCommentsByPostIds(postIds).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+
+        return posts.map(post -> {
+            Long likes = likesMap.getOrDefault(post.getId(), 0L);
+            Long comments = commentsMap.getOrDefault(post.getId(), 0L);
+            Long views = postViewRedisService.getLiveViews(post.getId());
+            return postMapper.toSummary(post, likes, views, comments);
+        });
     }
 }

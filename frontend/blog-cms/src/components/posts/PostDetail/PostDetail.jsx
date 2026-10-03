@@ -5,6 +5,8 @@ import { selectCurrentUser } from '../../../features/auth/authSelectors';
 import api from '../../../api/api';
 import './styles.scss'
 import CommentContainer from '../../comments/CommentContainer/CommentContainer';
+import ConfirmModal from '../../common/ConfirmModal/ConfirmModal';
+import LoginIcon from '../../common/LoginIcon/LoginIcon';
 import { FiMoreVertical, FiEdit2, FiTrash2 } from "react-icons/fi"
 
 import DOMPurify from 'dompurify';
@@ -22,6 +24,8 @@ const PostDetail = () => {
     const [submitting, setSubmitting] = useState(false);
     const [commentsCount, setCommentsCount] = useState(0);
     const [showMenu, setShowMenu] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const menuRef = useRef(null);
 
     const formatDate = (dateString) => {
@@ -85,14 +89,17 @@ const PostDetail = () => {
         }
     }
 
-    const handleDeletePost = async () => {
-        if (!window.confirm("Are you sure you want to delete this post?")) return;
+    const handleConfirmDelete = async () => {
         try {
+            setDeleting(true);
             await api.delete(`/posts/${postId}`);
             toast.success("Post deleted successfully!");
             navigate("/");
         } catch (err) {
             toast.error("Failed to delete post.");
+        } finally {
+            setDeleting(false);
+            setShowDeleteModal(false);
         }
     };
 
@@ -101,18 +108,36 @@ const PostDetail = () => {
     if (!postDetails) return null;
 
     const canEdit = currentUser && (currentUser.id === postDetails.author?.id);
+    const authorAvatar = postDetails.author?.avatarUrl || postDetails.authorAvatarUrl;
 
     return (
         <div className='postDetailPageContainer'>
+            <ConfirmModal
+                isOpen={showDeleteModal}
+                title="Delete Post?"
+                message="Are you sure you want to delete this post? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={deleting}
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setShowDeleteModal(false)}
+            />
+
             <div className='postDetailPageLayout'>
                 <div className='postDetailsSection'>
                     <div className="authorRow">
                         <Link to={`/users/${postDetails.author?.id}`} className="authorInfo">
-                            <img
-                                src={postDetails.authorAvatarUrl || "/default-avatar.png"}
-                                alt={postDetails.author?.username}
-                                className="authorAvatarPostStyle"
-                            />
+                            {authorAvatar ? (
+                                <img
+                                    src={authorAvatar}
+                                    alt={postDetails.author?.username}
+                                    className="authorAvatarPostStyle"
+                                />
+                            ) : (
+                                <div className="avatarWrapperNavbar" style={{ width: '2rem', height: '2rem' }}>
+                                    <LoginIcon />
+                                </div>
+                            )}
                             <span className="authorName">{postDetails.author?.username}</span>
                         </Link>
                         <span className="dot">•</span>
@@ -143,7 +168,7 @@ const PostDetail = () => {
                                             className="actionMenuItem delete"
                                             onClick={() => {
                                                 setShowMenu(false);
-                                                handleDeletePost();
+                                                setShowDeleteModal(true);
                                             }}
                                         >
                                             <FiTrash2 size={16} />
@@ -158,6 +183,30 @@ const PostDetail = () => {
                     <div className="titleSection">
                         <h2>{postDetails?.title}</h2>
                     </div>
+
+                    {postDetails?.tags && postDetails.tags.length > 0 && (
+                        <div className="postDetailTagsContainer" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', margin: '0.5rem 0 1rem 0' }}>
+                            {postDetails.tags.map((tag) => (
+                                <Link
+                                    key={tag.id}
+                                    to={`/?tag=${tag.slug}`}
+                                    className="postTagBadgePill"
+                                    style={{
+                                        backgroundColor: '#f1f5f9',
+                                        color: '#475569',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 600,
+                                        padding: '0.25rem 0.7rem',
+                                        borderRadius: '16px',
+                                        border: '1px solid #cbd5e1',
+                                        textDecoration: 'none'
+                                    }}
+                                >
+                                    #{tag.name}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
 
                     {postDetails?.images && postDetails.images.length > 0 && (
                         <div className='imagesLayoutSection'>

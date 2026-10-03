@@ -7,6 +7,7 @@ import { selectCurrentUser, selectAuthLoading } from '../../../features/auth/aut
 import { logout } from '../../../features/auth/authSlice'
 import { Link } from 'react-router-dom'
 import { FiHome, FiEdit3, FiChevronDown } from 'react-icons/fi'
+import GlobalSearch from '../GlobalSearch/GlobalSearch'
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -50,6 +51,9 @@ const Navbar = () => {
             Blogify<span className="brandDot">.</span>
           </h2>
         </Link>
+
+        <GlobalSearch />
+
         <div className="navbarButtonsSection">
           <Link to="/" className="navLink">
             <button className="homeButton">

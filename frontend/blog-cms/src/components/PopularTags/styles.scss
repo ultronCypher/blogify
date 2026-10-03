@@ -1,0 +1,90 @@
+.popularTagsSection {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    margin-bottom: 1.5rem;
+}
+
+.popularTagsTitleSection {
+    margin-bottom: 1rem;
+
+    .titleWithIcon {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .sectionIcon {
+            color: #E93F00;
+            font-size: 1.1rem;
+        }
+
+        h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+    }
+}
+
+.popularTagsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.popularTagItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.55rem 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+
+    &.active {
+        background: #fff5f2;
+        border-color: #E93F00;
+
+        .tagName {
+            color: #E93F00;
+            font-weight: 700;
+        }
+
+        .tagCount {
+            background: #E93F00;
+            color: #ffffff;
+        }
+    }
+
+    .tagName {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .tagCount {
+        font-size: 0.725rem;
+        font-weight: 600;
+        color: #64748b;
+        background: #e2e8f0;
+        padding: 0.15rem 0.5rem;
+        border-radius: 12px;
+        transition: all 0.15s ease;
+    }
+}
+
+.sidebarStatusText {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+}

@@ -13,8 +13,11 @@ const initialState = {
 
 export const fetchPosts = createAsyncThunk(
     "posts/fetchPosts",
-    async ({ page = 0, size = 10 } = {}) => {
-        const response = await api.get(`/posts?page=${page}&size=${size}`);
+    async ({ page = 0, size = 10, tagSlug = null } = {}) => {
+        const url = tagSlug
+            ? `/posts/tag/${tagSlug}?page=${page}&size=${size}`
+            : `/posts?page=${page}&size=${size}`;
+        const response = await api.get(url);
         return response.data;
     }
 );

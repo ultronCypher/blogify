@@ -15,13 +15,41 @@ public class PostViewRedisService {
         return "post:views:"+postId;
     }
 
-    public void incrementView(Long postId){
-        redisTemplate.opsForValue().increment(key(postId));
+    private String dedupKey(Long postId, String userIdentifier){
+        return "post:view_lock:" + postId + ":" + userIdentifier;
+    }
+
+//    public void incrementView(Long postId){
+//        try {
+//            redisTemplate.opsForValue().increment(key(postId));
+//        } catch (Exception e) {
+//        }
+//    }
+
+    public boolean incrementViewDeduplicated(Long postId, String userIdentifier){
+        try {
+            if (userIdentifier == null || userIdentifier.isBlank()) {
+                userIdentifier = "anonymous";
+            }
+            String lockKey = dedupKey(postId, userIdentifier);
+            Boolean isFirstVisit = redisTemplate.opsForValue().setIfAbsent(lockKey, "1", java.time.Duration.ofMinutes(3));
+            if (Boolean.TRUE.equals(isFirstVisit)) {
+                redisTemplate.opsForValue().increment(key(postId));
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     public Long getLiveViews(Long postId){
-        Object value = redisTemplate.opsForValue().get(key(postId));
-        if (value == null) return 0L;
-        return ((Number) value).longValue();
+        try {
+            Object value = redisTemplate.opsForValue().get(key(postId));
+            if (value == null) return 0L;
+            return ((Number) value).longValue();
+        } catch (Exception e) {
+            return 0L;
+        }
     }
 }

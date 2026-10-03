@@ -29,6 +29,8 @@ const PostEditPage = () => {
     const authLoading = useSelector(selectAuthLoading);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
+    const [availableTags, setAvailableTags] = useState([]);
+    const [selectedTagIds, setSelectedTagIds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
@@ -43,14 +45,22 @@ const PostEditPage = () => {
             return;
         }
 
-        const fetchPost = async () => {
+        const fetchPostAndTags = async () => {
             try {
-                const res = await api.get(`/posts/${postId}`);
-                if (!res.data.author || res.data.author.id !== currentUser.id) {
+                const [postRes, tagsRes] = await Promise.all([
+                    api.get(`/posts/${postId}`),
+                    api.get('/tags')
+                ]);
+
+                if (!postRes.data.author || postRes.data.author.id !== currentUser.id) {
                     setUnauthorized(true);
                 } else {
-                    setTitle(res.data.title);
-                    setContent(res.data.content);
+                    setTitle(postRes.data.title);
+                    setContent(postRes.data.content);
+                    setAvailableTags(tagsRes.data || []);
+                    if (postRes.data.tags) {
+                        setSelectedTagIds(postRes.data.tags.map(t => t.id));
+                    }
                 }
             } catch (err) {
                 setError("Failed to load post");
@@ -58,8 +68,20 @@ const PostEditPage = () => {
                 setLoading(false);
             }
         };
-        fetchPost();
+        fetchPostAndTags();
     }, [postId, currentUser, authLoading]);
+
+    const toggleTag = (tagId) => {
+        if (selectedTagIds.includes(tagId)) {
+            setSelectedTagIds(prev => prev.filter(id => id !== tagId));
+        } else {
+            if (selectedTagIds.length >= 5) {
+                toast.warning("A post can have a maximum of 5 tags.");
+                return;
+            }
+            setSelectedTagIds(prev => [...prev, tagId]);
+        }
+    };
 
     const handleSave = async () => {
         const plainText = content.replace(/<[^>]*>/g, '').trim();
@@ -75,6 +97,7 @@ const PostEditPage = () => {
             await api.put(`/posts/${postId}`, {
                 title,
                 content,
+                tagIds: selectedTagIds
             });
             toast.success("Post updated successfully!");
             navigate(`/${postId}`);
@@ -130,6 +153,38 @@ const PostEditPage = () => {
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="Post title"
                     />
+
+                    <div className="inputSection" style={{ marginBottom: '1.25rem' }}>
+                        <label className="formLabel" style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, fontSize: '0.9rem', color: '#4b5563' }}>
+                            Tags (select up to 5)
+                        </label>
+                        <div className="tagsSelectionContainer" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            {availableTags.map((tag) => {
+                                const isSelected = selectedTagIds.includes(tag.id);
+                                return (
+                                    <button
+                                        type="button"
+                                        key={tag.id}
+                                        className={`tagBadgeSelect ${isSelected ? 'selected' : ''}`}
+                                        onClick={() => toggleTag(tag.id)}
+                                        style={{
+                                            backgroundColor: isSelected ? '#E93F00' : '#f1f5f9',
+                                            color: isSelected ? '#ffffff' : '#475569',
+                                            border: `1px solid ${isSelected ? '#E93F00' : '#cbd5e1'}`,
+                                            borderRadius: '20px',
+                                            padding: '0.35rem 0.75rem',
+                                            fontSize: '0.85rem',
+                                            fontWeight: 500,
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        #{tag.name} {isSelected ? '✓' : '+'}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
                     <div className="quillEditorWrapper">
                         <ReactQuill
                             theme="snow"

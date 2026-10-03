@@ -10,6 +10,8 @@ public class UserMapper {
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setRole(user.getRole());
+        dto.setAvatarUrl(user.getAvatarUrl());
         return dto;
     }
 }
+

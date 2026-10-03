@@ -5,7 +5,7 @@ import { FaHeart, FaRegHeart, FaEye, FaComment } from "react-icons/fa";
 import api from '../../../api/api';
 import { Link } from 'react-router-dom';
 
-const HomePagePost = ({ post }) => {
+const HomePagePost = ({ post, onSelectTag }) => {
     const postId = post.id;
     const previewImage = post.previewImage;
     const [error, setError] = useState(null);
@@ -92,6 +92,25 @@ const HomePagePost = ({ post }) => {
             </div>
 
             <p>{stripHtml(post.excerpt)}....</p>
+
+            {post.tags && post.tags.length > 0 && (
+                <div className="postCardTags">
+                    {post.tags.map((tag) => (
+                        <span
+                            key={tag.id}
+                            className="postTagBadgePill"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (onSelectTag) onSelectTag(tag.slug);
+                            }}
+                        >
+                            #{tag.name}
+                        </span>
+                    ))}
+                </div>
+            )}
+
             <div className="postStats">
                 <span className="stat">
                     <FaEye />

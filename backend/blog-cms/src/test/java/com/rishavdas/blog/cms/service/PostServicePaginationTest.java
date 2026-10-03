@@ -30,6 +30,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
+import com.rishavdas.blog.cms.repository.PostViewRepository;
+
 @ExtendWith(MockitoExtension.class)
 public class PostServicePaginationTest {
 
@@ -41,6 +43,9 @@ public class PostServicePaginationTest {
 
     @Mock
     private CommentRepository commentRepository;
+
+    @Mock
+    private PostViewRepository postViewRepository;
 
     @Mock
     private PostViewRedisService postViewRedisService;

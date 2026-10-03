@@ -6,6 +6,8 @@ public class UserDTO {
     private Long id;
     private String username;
     private Role role;
+    private String avatarUrl;
+
     public UserDTO(){
 
     }
@@ -27,4 +29,11 @@ public class UserDTO {
     public void setRole(Role role){
         this.role=role;
     }
+    public String getAvatarUrl(){
+        return avatarUrl;
+    }
+    public void setAvatarUrl(String avatarUrl){
+        this.avatarUrl=avatarUrl;
+    }
 }
+

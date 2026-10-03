@@ -4,9 +4,9 @@ import com.rishavdas.blog.cms.dto.post_dtos.PostDTO;
 import com.rishavdas.blog.cms.dto.PostLikeDTO;
 import com.rishavdas.blog.cms.dto.PostSummaryDTO;
 import com.rishavdas.blog.cms.dto.post_dtos.PostRequestDTO;
-import com.rishavdas.blog.cms.dto.post_dtos.PostResponseDTO;
 import com.rishavdas.blog.cms.mapper.PostMapper;
 import com.rishavdas.blog.cms.model.Post;
+import com.rishavdas.blog.cms.model.TagFilterMode;
 import com.rishavdas.blog.cms.model.TimeRange;
 import com.rishavdas.blog.cms.service.PostService;
 import com.rishavdas.blog.cms.service.PostViewRedisService;
@@ -56,6 +56,8 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<Page<PostSummaryDTO>> getPostSummaries(
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(defaultValue = "ALL") TagFilterMode tagMode,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort
@@ -72,6 +74,9 @@ public class PostController {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, property));
+        if (tags != null && !tags.isEmpty()) {
+            return ResponseEntity.ok(postService.getPostsByTags(tags, tagMode, pageable));
+        }
         return ResponseEntity.ok(postService.getPostSummaries(pageable));
     }
 
@@ -80,9 +85,10 @@ public class PostController {
             @PathVariable Long id,
             Authentication authentication
     ){
-        postViewRedisService.incrementView(id);
-        if(authentication!=null){
-            postViewService.recordView(id,authentication.getName());
+        String userIdentifier = authentication != null ? authentication.getName() : "anonymous";
+        boolean isNewView = postViewRedisService.incrementViewDeduplicated(id, userIdentifier);
+        if(isNewView && authentication != null){
+            postViewService.recordView(id, authentication.getName());
         }
         Post post=postService.getPostById(id);
         return ResponseEntity.ok(PostMapper.toDTO(post));
@@ -138,5 +144,15 @@ public class PostController {
             @RequestParam(defaultValue = "10") int limit
     ){
         return ResponseEntity.ok(postService.getTopContributors(limit));
+    }
+
+    @GetMapping("/tag/{slug}")
+    public ResponseEntity<Page<PostSummaryDTO>> getPostsByTag(
+            @PathVariable String slug,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return ResponseEntity.ok(postService.getPostsByTagSlug(slug, pageable));
     }
 }

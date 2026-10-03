@@ -30,4 +30,6 @@ public interface PostService {
     List<PostLikeDTO> getTopLikedPosts(TimeRange range, int limit);
     Page<PostSummaryDTO> getPostsByUser(Long userId, int page, int size);
     List<TopContributorDTO> getTopContributors(int limit);
+    Page<PostSummaryDTO> getPostsByTagSlug(String slug, Pageable pageable);
+    Page<PostSummaryDTO> getPostsByTags(List<String> tags, com.rishavdas.blog.cms.model.TagFilterMode mode, Pageable pageable);
 }

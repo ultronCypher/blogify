@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchPosts } from '../../features/posts/postSlice';
 import {
@@ -10,13 +10,18 @@ import {
     selectPostsError
 } from '../../features/posts/postSelectors';
 import HomePagePost from '../../components/posts/HomePagePost/HomePagePost';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import TopLikedPost from '../../components/TopLikedPost/TopLikedPost';
 import TopContributors from '../../components/TopContributors/TopContributors';
+import PopularTags from '../../components/PopularTags/PopularTags';
+import api from '../../api/api';
 import './styles.scss';
 
 const Home = () => {
     const dispatch = useDispatch();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeTagSlug = searchParams.get('tag');
+
     const posts = useSelector(selectPosts);
     const currentPage = useSelector(selectCurrentPage);
     const totalPages = useSelector(selectTotalPages);
@@ -24,13 +29,35 @@ const Home = () => {
     const status = useSelector(selectPostsStatus);
     const error = useSelector(selectPostsError);
 
+    const [filterTags, setFilterTags] = useState([]);
+
     useEffect(() => {
-        dispatch(fetchPosts({ page: 0, size: 10 }));
-    }, [dispatch]);
+        const fetchAvailableTags = async () => {
+            try {
+                const res = await api.get('/tags/popular?limit=8');
+                setFilterTags(res.data);
+            } catch (err) {
+                console.error("Failed to load filter tags", err);
+            }
+        };
+        fetchAvailableTags();
+    }, []);
+
+    useEffect(() => {
+        dispatch(fetchPosts({ page: 0, size: 10, tagSlug: activeTagSlug }));
+    }, [dispatch, activeTagSlug]);
+
+    const handleSelectTag = (slug) => {
+        if (slug) {
+            setSearchParams({ tag: slug });
+        } else {
+            setSearchParams({});
+        }
+    };
 
     const handlePageChange = (pageIndex) => {
         if (pageIndex >= 0 && pageIndex < totalPages && pageIndex !== currentPage) {
-            dispatch(fetchPosts({ page: pageIndex, size: pageSize }));
+            dispatch(fetchPosts({ page: pageIndex, size: pageSize, tagSlug: activeTagSlug }));
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -88,6 +115,29 @@ const Home = () => {
         <div className='homePageContainer'>
             <div className='homePageLayout'>
                 <div className='homePageFeedPosts'>
+                    <div className="tagFilterBar">
+                        <button
+                            className={`tagFilterPill ${!activeTagSlug ? 'active' : ''}`}
+                            onClick={() => handleSelectTag(null)}
+                        >
+                            All Posts
+                        </button>
+                        {filterTags.map((tag) => (
+                            <button
+                                key={tag.id}
+                                className={`tagFilterPill ${activeTagSlug === tag.slug ? 'active' : ''}`}
+                                onClick={() => handleSelectTag(tag.slug)}
+                            >
+                                #{tag.name}
+                            </button>
+                        ))}
+                        {activeTagSlug && (
+                            <button className="clearFilterBtn" onClick={() => handleSelectTag(null)}>
+                                Clear filter ✕
+                            </button>
+                        )}
+                    </div>
+
                     {status === 'loading' && (
                         <div className="postsLoadingState">
                             <p>Loading posts...</p>
@@ -97,7 +147,7 @@ const Home = () => {
                     {status === 'failed' && (
                         <div className="postsErrorState">
                             <p>Error: {error}</p>
-                            <button onClick={() => dispatch(fetchPosts({ page: currentPage, size: pageSize }))} className="retryBtn">
+                            <button onClick={() => dispatch(fetchPosts({ page: currentPage, size: pageSize, tagSlug: activeTagSlug }))} className="retryBtn">
                                 Retry
                             </button>
                         </div>
@@ -105,13 +155,13 @@ const Home = () => {
 
                     {status !== 'loading' && status !== 'failed' && posts.length === 0 && (
                         <div className="postsEmptyState">
-                            <p>No posts available.</p>
+                            <p>{activeTagSlug ? `No posts found tagged with "#${activeTagSlug}".` : 'No posts available.'}</p>
                         </div>
                     )}
 
                     {status !== 'failed' && posts.map(post => (
                         <Link key={post.id} to={`/${post.id}`}>
-                            <HomePagePost post={post} />
+                            <HomePagePost post={post} onSelectTag={handleSelectTag} />
                         </Link>
                     ))}
 
@@ -140,6 +190,7 @@ const Home = () => {
                     )}
                 </div>
                 <div className='hallOfFameSection'>
+                    <PopularTags activeTagSlug={activeTagSlug} onSelectTag={handleSelectTag} />
                     <TopLikedPost />
                     <TopContributors />
                 </div>

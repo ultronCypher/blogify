@@ -46,4 +46,18 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     @Query("SELECT new com.rishavdas.blog.cms.dto.TopContributorDTO(u.id, u.username, u.avatarUrl, COUNT(p)) " +
            "FROM Post p JOIN p.author u GROUP BY u.id, u.username, u.avatarUrl ORDER BY COUNT(p) DESC")
     List<TopContributorDTO> findTopContributors(Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.author LEFT JOIN FETCH p.images WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :query, '%')) ORDER BY p.createdAt DESC")
+    List<Post> searchPosts(@Param("query") String query, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM Post p JOIN p.tags t WHERE t.slug = :slug ORDER BY p.createdAt DESC")
+    Page<Post> findByTagSlug(@Param("slug") String slug, Pageable pageable);
+
+    @Query(value = "SELECT DISTINCT p FROM Post p JOIN p.tags t WHERE LOWER(t.slug) IN :tags ORDER BY p.createdAt DESC",
+           countQuery = "SELECT COUNT(DISTINCT p) FROM Post p JOIN p.tags t WHERE LOWER(t.slug) IN :tags")
+    Page<Post> findByAnyTagSlugs(@Param("tags") List<String> tags, Pageable pageable);
+
+    @Query(value = "SELECT p FROM Post p JOIN p.tags t WHERE LOWER(t.slug) IN :tags GROUP BY p.id HAVING COUNT(DISTINCT LOWER(t.slug)) = :tagCount ORDER BY p.createdAt DESC",
+           countQuery = "SELECT COUNT(p.id) FROM Post p WHERE p.id IN (SELECT p2.id FROM Post p2 JOIN p2.tags t2 WHERE LOWER(t2.slug) IN :tags GROUP BY p2.id HAVING COUNT(DISTINCT LOWER(t2.slug)) = :tagCount)")
+    Page<Post> findByAllTagSlugs(@Param("tags") List<String> tags, @Param("tagCount") long tagCount, Pageable pageable);
 }
